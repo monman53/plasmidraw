@@ -8,60 +8,62 @@
 <p>plasmid diagram drawer</p>
 </header>
 
-<svg id='svg' width='500px' height='500px' viewBox='-1 -1 2 2'>
-    <figure-svg v-for="(figure, index) in figures" :figure="figure" :key="figure.id"></figure-svg>
-</svg>
+<div id='plasmid'>
+    <svg width='500px' height='500px' viewBox='-1 -1 2 2'>
+        <plasmid-svg v-for="(figure, index) in figures" :figure="figure" :key="figure.id"></plasmid-svg>
+    </svg>
+
+    <br>
+    <form>
+        <input type='text' style='width: 10em;' v-model='plasmid.length'>
+        <label>plasmid length</label><br><br>
+
+        <input type='range' min='0' max='1' step='0.02' v-model='editing.r'>
+        <input type='text' style='width: 10em;' v-model='editing.r'>
+        <label>r</label><br>
+
+        <input type='range' min='0' max='0.1' step='0.001' v-model='editing.strokeWidth'>
+        <input type='text' style='width: 10em;' v-model='editing.strokeWidth'>
+        <label>strokeWidth</label><br>
+
+        <input type='text' style='width: 10em;' v-model='editing.from'>
+        <label>from</label><br>
+
+        <input type='text' style='width: 10em;' v-model='editing.to'>
+        <label>to</label><br>
+    </form>
+</div>
 
 <script>
-Vue.component('plasmid', {
-    data: function() {
-        return {
-            prop: {
-                r: 0.5,
-                strokeWidth: 0.01,
-            }
-        }
+
+var plasmid = new Vue({
+    el: "#plasmid", 
+    data: {
+        plasmid: {
+            length: 1000,
+        }, 
+        figures: [],
+        editing: undefined, 
+    },
+    created: function(){
+        this.figures.push({id: 0, r: 0.5, strokeWidth: 0.01, from: 0, to: 1000});
+        this.editing = this.figures[0];
     },
     components: {
         'plasmid-svg': {
-            template: '<path :d="d" fill="none" stroke="black" :stroke-width="prop.strokeWidth" />',
-            props: ['prop'],
+            template: '<path :d="d" fill="none" stroke="black" :stroke-width="figure.strokeWidth" />',
+            props: ['figure'],
             computed: {
                 d: function(){
-                    var r = this.prop.r;
-                    return `M 0 0 m 0 -${r} A 0.5 0.5, 0 0 1, ${r} 0`;
+                    var r = this.figure.r;
+                    return `M 0 0 m 0 -${r} A ${r} ${r}, 0 0 1, ${r} 0`;
                 }, 
             }, 
         }, 
-        'my-figure-form': {
-            props: ['prop'], 
+        'plasmid-form': {
+            props: ['figure'], 
         }
     }
-});
-
-Vue.component('figure-svg', {
-    template: '<path :d="d" fill="none" stroke="black" :stroke-width="strokeWidth" />',
-    data: function() {
-        return {
-            r: 0.5,
-            strokeWidth: 0.01,
-        }
-    }, 
-    computed: {
-        d: function(){
-            var r = this.r;
-            return `M 0 0 m 0 -${r} A 0.5 0.5, 0 0 1, ${r} 0`;
-        }, 
-    }, 
-});
-
-var figures = [{id: 1}];
-
-var svg = new Vue({
-    el: "#svg", 
-    data: {
-        figures: figures,
-    },
 });
 </script>
 
