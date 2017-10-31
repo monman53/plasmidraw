@@ -1,4 +1,70 @@
 <!DOCTYPE html>
+<meta charset="utf-8">
+<script src="https://unpkg.com/vue"></script>
 <title>plasmidraw</title>
+
+<header>
 <h1>plasmidraw</h1>
-<p>test</p>
+<p>plasmid diagram drawer</p>
+</header>
+
+<svg id='svg' width='500px' height='500px' viewBox='-1 -1 2 2'>
+    <figure-svg v-for="(figure, index) in figures" :figure="figure" :key="figure.id"></figure-svg>
+</svg>
+
+<script>
+Vue.component('plasmid', {
+    data: function() {
+        return {
+            prop: {
+                r: 0.5,
+                strokeWidth: 0.01,
+            }
+        }
+    },
+    components: {
+        'plasmid-svg': {
+            template: '<path :d="d" fill="none" stroke="black" :stroke-width="prop.strokeWidth" />',
+            props: ['prop'],
+            computed: {
+                d: function(){
+                    var r = this.prop.r;
+                    return `M 0 0 m 0 -${r} A 0.5 0.5, 0 0 1, ${r} 0`;
+                }, 
+            }, 
+        }, 
+        'my-figure-form': {
+            props: ['prop'], 
+        }
+    }
+});
+
+Vue.component('figure-svg', {
+    template: '<path :d="d" fill="none" stroke="black" :stroke-width="strokeWidth" />',
+    data: function() {
+        return {
+            r: 0.5,
+            strokeWidth: 0.01,
+        }
+    }, 
+    computed: {
+        d: function(){
+            var r = this.r;
+            return `M 0 0 m 0 -${r} A 0.5 0.5, 0 0 1, ${r} 0`;
+        }, 
+    }, 
+});
+
+var figures = [{id: 1}];
+
+var svg = new Vue({
+    el: "#svg", 
+    data: {
+        figures: figures,
+    },
+});
+</script>
+
+<footer>
+<p>powered by Vue.js and SVG</p>
+</footer>
