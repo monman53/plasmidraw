@@ -15,7 +15,13 @@
 
     <br>
 
-    <button v-on:click="addGene">Add</button>
+    <!--<h3>Edit</h3>-->
+    <h3>New</h3>
+    <label for='from'>from</label>
+    <input id='from' type='number' min='0' max='1' v-model='new_from'></input><br>
+    <label for='to'>to</label>
+    <input id='to' type='number' min='0' max='1' v-model='new_to'></input><br>
+    <button v-on:click='addGene'>Add</button>
 </div>
 
 <script>
@@ -25,13 +31,15 @@ var plasmid = new Vue({
     data: {
         genes: [],
         id_counter: 0,
+        new_from: 0.25,
+        new_to: 0.5,
     },
     methods: {
         addGene: function() {
             console.log("Gene added.");
             var from = this.id_counter*0.05;
             var to = from + 0.03;
-            this.genes.push({id: this.id_counter, from: from, to: to});
+            this.genes.push({id: this.id_counter, from: this.new_from, to: this.new_to});
             this.id_counter++;
         }
     }, 
