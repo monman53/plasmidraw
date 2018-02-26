@@ -1,7 +1,16 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
 <script src="https://unpkg.com/vue"></script>
+
 <title>plasmidraw</title>
+
+<style>
+/*
+.gene-item:hover {
+    fill: red;
+}
+*/
+</style>
 
 <header>
 <h1>plasmidraw</h1>
@@ -11,75 +20,95 @@
 <div id='plasmid'>
     <svg width='500px' height='500px' viewBox='-1.5 -1.5 3 3'>
         <circle cx='0' cy='0' r='1' stroke='black' fill='none' stroke-width='0.01' />
-        <defs>
-            <clipPath id='cut-off'>
-                <circle cx='0' cy='0' r='0.95' />
-            </clipPath>
-        </defs>
-        <gene v-for='(gene, index) in genes' :gene='gene'></gene>
+        <gene-item v-for='n in genes'></gene>
     </svg>
 
     <br>
 
     <!--<h3>Edit</h3>-->
+    <!--<label for='from'>from</label>-->
+    <!--<input id='from' type='number' min='0' max='1' v-model='gene_edit.from'></input><br>-->
+    <!--<label for='to'>to</label>-->
+    <!--<input id='to' type='number' min='0' max='1' v-model='gene_edit.to'></input><br>-->
     <h3>New</h3>
-    <label for='from'>from</label>
-    <input id='from' type='number' min='0' max='1' v-model='new_from'></input><br>
-    <label for='to'>to</label>
-    <input id='to' type='number' min='0' max='1' v-model='new_to'></input><br>
     <button v-on:click='addGene'>Add</button>
 </div>
 
 <script>
 
+Vue.component('gene-item', {
+    template: '<g v-on:mouseenter="mouseEnter" v-on:mouseleave="mouseLeave">'+
+                '<path v-if="visible" :d="d" :fill="color" stroke="black "stroke-width="0.01" stroke-location="inside"   class="gene-item"/>'+
+                '<circle v-if="visible && hover" fill="white" stroke="black" stroke-width="0.01" :cx="sx" :cy="sy" r="0.03"/>'+
+                '<circle v-if="visible && hover" fill="white" stroke="black" stroke-width="0.01" :cx="tx" :cy="ty" r="0.03"/>'+
+              '</g>', 
+    data: function() {
+        return {
+            r: 1.0, 
+            from: 0,
+            to: 0.1,
+            visible: true, 
+            color: "#DDDDDD",
+            hover: false, 
+        }
+    },
+    methods: {
+        mouseEnter: function() {
+            //this.color = 'red';
+            this.hover = true;
+        },
+        mouseLeave: function() {
+            //this.color = '#DDDDDD';
+            this.hover = false;
+        },
+    }, 
+    computed: {
+        sx: function() {
+           return  this.r*Math.sin(this.from*2*Math.PI);
+        },
+        sy: function() {
+           return -this.r*Math.cos(this.from*2*Math.PI);
+        },
+        tx: function() {
+           return  this.r*Math.sin(this.to*2*Math.PI);
+        },
+        ty: function() {
+           return -this.r*Math.cos(this.to*2*Math.PI);
+        },
+        d: function() {
+            var r = this.r;
+            var from = this.from;
+            var to = this.to;
+            var sx =  r*Math.sin(from*2*Math.PI);
+            var sy = -r*Math.cos(from*2*Math.PI);
+            var tx =  r*Math.sin(to*2*Math.PI);
+            var ty = -r*Math.cos(to*2*Math.PI);
+            var a = from <= to ? 1 : 0;
+            var b = Math.abs(from-to) >= 0.5 ? 1 : 0;
+
+            var dr = 0.05;
+
+            var res = '';
+            res += `m ${sx*(1+dr)} ${sy*(1+dr)}`;
+            res += `A ${r*(1+dr)} ${r*(1+dr)} 0 ${b} ${a} ${tx*(1+dr)} ${ty*(1+dr)}`;
+            res += `L ${tx*(1-dr)} ${ty*(1-dr)}`;
+            res += `A ${r*(1-dr)} ${r*(1-dr)} 0 ${b} ${1-a} ${sx*(1-dr)} ${sy*(1-dr)}`;
+            res += `L ${sx*(1+dr)} ${sy*(1+dr)}`;
+            return res;
+        }, 
+    }, 
+});
+
 var plasmid = new Vue({
     el: "#plasmid", 
     data: {
-        genes: [],
-        id_counter: 0,
-        new_from: 0.25,
-        new_to: 0.5,
+        genes: 0,
     },
     methods: {
         addGene: function() {
-            console.log("Gene added.");
-            var from = this.id_counter*0.05;
-            var to = from + 0.03;
-            this.genes.push({id: this.id_counter, from: this.new_from, to: this.new_to});
-            this.id_counter++;
-        }
+            this.genes++;
+        },
     }, 
-    components: {
-        'gene': {
-            template: '<path :d="d" fill="gray" stroke="black" stroke-width="0.01" :id="gene.id" />', 
-            props: ['gene'], 
-            computed: {
-                d: function() {
-                    var r = 1.0;
-                    var from = this.gene.from;
-                    var to = this.gene.to;
-                    var sx =  r*Math.sin(from*2*Math.PI);
-                    var sy = -r*Math.cos(from*2*Math.PI);
-                    var tx =  r*Math.sin(to*2*Math.PI);
-                    var ty = -r*Math.cos(to*2*Math.PI);
-                    var a = from <= to ? 1 : 0;
-                    var b = Math.abs(from-to) >= 0.5 ? 1 : 0;
-
-                    var dr = 0.05;
-
-                    var res = '';
-                    //res += 'M 0 0';
-                    res += `m ${sx*(1+dr)} ${sy*(1+dr)}`;
-                    res += `A ${r*(1+dr)} ${r*(1+dr)} 0 ${b} ${a} ${tx*(1+dr)} ${ty*(1+dr)}`;
-                    res += `L ${tx*(1-dr)} ${ty*(1-dr)}`;
-                    res += `A ${r*(1-dr)} ${r*(1-dr)} 0 ${b} ${1-a} ${sx*(1-dr)} ${sy*(1-dr)}`;
-                    res += `L ${sx*(1+dr)} ${sy*(1+dr)}`;
-                    return res;
-                    //return `M 0 0 L ${sx} ${sy} A ${r} ${r} 0 ${b} ${a} ${tx} ${ty} L 0 0`;
-                }, 
-            }, 
-        }
-    }
 });
 </script>
 
