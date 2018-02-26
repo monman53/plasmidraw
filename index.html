@@ -9,7 +9,13 @@
 </header>
 
 <div id='plasmid'>
-    <svg width='500px' height='500px' viewBox='-2 -2 4 4'>
+    <svg width='500px' height='500px' viewBox='-1.5 -1.5 3 3'>
+        <circle cx='0' cy='0' r='1' stroke='black' fill='none' stroke-width='0.01' />
+        <defs>
+            <clipPath id='cut-off'>
+                <circle cx='0' cy='0' r='0.95' />
+            </clipPath>
+        </defs>
         <gene v-for='(gene, index) in genes' :gene='gene'></gene>
     </svg>
 
@@ -45,16 +51,31 @@ var plasmid = new Vue({
     }, 
     components: {
         'gene': {
-            template: '<path :d="d" fill="none" stroke="black" stroke-width="0.1" :id="gene.id" />', 
+            template: '<path :d="d" fill="gray" stroke="black" stroke-width="0.01" :id="gene.id" />', 
             props: ['gene'], 
             computed: {
                 d: function() {
                     var r = 1.0;
-                    var sx =  r*Math.sin(this.gene.from*2*Math.PI);
-                    var sy = -r*Math.cos(this.gene.from*2*Math.PI);
-                    var tx =  r*Math.sin(this.gene.to*2*Math.PI);
-                    var ty = -r*Math.cos(this.gene.to*2*Math.PI);
-                    return `M 0 0 m ${sx} ${sy} A ${r} ${r}, 0 0 1, ${tx} ${ty}`;
+                    var from = this.gene.from;
+                    var to = this.gene.to;
+                    var sx =  r*Math.sin(from*2*Math.PI);
+                    var sy = -r*Math.cos(from*2*Math.PI);
+                    var tx =  r*Math.sin(to*2*Math.PI);
+                    var ty = -r*Math.cos(to*2*Math.PI);
+                    var a = from <= to ? 1 : 0;
+                    var b = Math.abs(from-to) >= 0.5 ? 1 : 0;
+
+                    var dr = 0.05;
+
+                    var res = '';
+                    //res += 'M 0 0';
+                    res += `m ${sx*(1+dr)} ${sy*(1+dr)}`;
+                    res += `A ${r*(1+dr)} ${r*(1+dr)} 0 ${b} ${a} ${tx*(1+dr)} ${ty*(1+dr)}`;
+                    res += `L ${tx*(1-dr)} ${ty*(1-dr)}`;
+                    res += `A ${r*(1-dr)} ${r*(1-dr)} 0 ${b} ${1-a} ${sx*(1-dr)} ${sy*(1-dr)}`;
+                    res += `L ${sx*(1+dr)} ${sy*(1+dr)}`;
+                    return res;
+                    //return `M 0 0 L ${sx} ${sy} A ${r} ${r} 0 ${b} ${a} ${tx} ${ty} L 0 0`;
                 }, 
             }, 
         }
