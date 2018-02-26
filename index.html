@@ -21,18 +21,12 @@
 <div id='plasmid'>
     <button v-on:click='addGene'>Add Gene</button><br>
 
-    <svg width='500px' height='500px' viewBox='-1.5 -1.5 3 3' v-on:mousemove="mouseMove">
+    <svg width='500px' height='500px' viewBox='-1.5 -1.5 3 3' id='plasmid-svg'
+        @mousemove='mouseMove'
+        @mouseup='mouseUp'>
         <circle cx='0' cy='0' r='1' stroke='black' fill='none' stroke-width='0.01' />
-        <gene-item v-for='gene in genes' :gene='gene' :key='gene.key'></gene>
+        <gene-item v-for='gene in genes' :gene='gene' :key='gene.key' @edit-gene='editGene(gene.key, gene.which)'></gene>
     </svg>
-
-    <br>
-
-    <!--<h3>Edit</h3>-->
-    <!--<label for='from'>from</label>-->
-    <!--<input id='from' type='number' min='0' max='1' v-model='gene_edit.from'></input><br>-->
-    <!--<label for='to'>to</label>-->
-    <!--<input id='to' type='number' min='0' max='1' v-model='gene_edit.to'></input><br>-->
 </div>
 
 <footer>
@@ -45,27 +39,24 @@
 Vue.component('gene-item', { // {{{
     template: '<g v-on:mouseenter="mouseEnter" v-on:mouseleave="mouseLeave">'+
                 '<path v-if="gene.visible" :d="d" :fill="gene.color" stroke="black "stroke-width="0.01" stroke-location="inside"   class="gene-item"/>'+
-                '<circle v-if="gene.visible && gene.hover" fill="white" stroke="black" stroke-width="0.01" :cx="sx" :cy="sy" r="0.03" v-on:mousedown="mouseDown" v-on:mousemove="mouseMove" v-on:mouseup="mouseUp"/>'+
-                '<circle v-if="gene.visible && gene.hover" fill="white" stroke="black" stroke-width="0.01" :cx="tx" :cy="ty" r="0.03"/>'+
+                '<circle v-if="gene.visible && gene.hover" fill="white" stroke="black" stroke-width="0.01" :cx="sx" :cy="sy" r="0.03" v-on:mousedown="mouseDownFrom"/>'+
+                '<circle v-if="gene.visible && gene.hover" fill="white" stroke="black" stroke-width="0.01" :cx="tx" :cy="ty" r="0.03" v-on:mousedown="mouseDownTo"/>'+
               '</g>', 
     props: ['gene'], 
     methods: {
         mouseEnter: function() {
-            //this.color = 'red';
             this.gene.hover = true;
         },
         mouseLeave: function() {
-            //this.color = '#DDDDDD';
             this.gene.hover = false;
         },
-        mouseDown: function(event) {
-            console.log(event);
+        mouseDownFrom: function() {
+            this.gene.which = 'from';
+            this.$emit('edit-gene');
         }, 
-        mouseMove: function(event) {
-            console.log(event);
-        },
-        mouseUp: function(event) {
-            console.log(event);
+        mouseDownTo: function() {
+            this.gene.which = 'to';
+            this.$emit('edit-gene');
         }, 
     }, 
     computed: {
@@ -110,6 +101,7 @@ var plasmid = new Vue({
     data: {
         genes: [],
         mouse_pos: 0,
+        editing: undefined,
     },
     methods: {
         addGene: function() {
@@ -121,12 +113,33 @@ var plasmid = new Vue({
                 visible: true, 
                 color: "#DDDDDD",
                 hover: false, 
-                drag: false,
+                which: 'from',
             }
             this.genes.push(new_gene);
         },
-        mouseMove: function(event) {
+        editGene: function(key) {
+            this.editing = key;
+            //console.log(key);
         },
+        mouseMove: function(event) {
+            if(this.editing == undefined){
+                return;
+            }
+
+            var svg = document.getElementById('plasmid-svg');
+            var rect = svg.getBoundingClientRect();
+            var x = event.clientX - rect.left - rect.width/2;
+            var y = event.clientY - rect.top - rect.height/2;
+            var pos = (Math.atan2(-x, y) + Math.PI)/(2*Math.PI);
+            this.mouse_pos = pos;
+
+            this.genes[this.editing][this.genes[this.editing].which] = this.mouse_pos;
+            //console.log(this.mouse_pos);
+        },
+        mouseUp: function(event) {
+            this.editing = undefined;
+            //console.log(event);
+        }, 
     }, 
 });
 </script>
