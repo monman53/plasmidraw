@@ -1,5 +1,5 @@
 = plasmidraw
 
-A simple SVG drawer for plasmid diagram.
+A simple SVG drawer for plasmid map diagram.
 
-Visit https://monman53.github.io/plasmidraw/ .
+https://monman53.github.io/plasmidraw/

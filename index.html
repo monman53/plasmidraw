@@ -171,11 +171,13 @@ var plasmid = new Vue({
                 arrow: true,
                 offset: 0,
             }
+            this.editing = new_gene.key;
             this.genes.push(new_gene);
         },
         copyGene: function() {
             var copy_gene = Object.assign({}, this.genes[this.editing]);
             copy_gene.key = this.genes.length;
+            this.editing = copy_gene.key;
             var min = Math.min(copy_gene.from, copy_gene.to);
             copy_gene.from -= min;
             copy_gene.to   -= min;
