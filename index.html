@@ -52,6 +52,7 @@ svg {
             <h3>Edit</h3>
             color<input type='color' v-model='genes[editing].color' /><br>
             arrow<input type='checkbox' v-model='genes[editing].arrow' /><br>
+            <button v-on:click='copyGene'>Copy Gene</button><br>
             <button v-on:click='deleteGene'>Delete Gene</button><br>
         </div>
     </div>
@@ -171,6 +172,14 @@ var plasmid = new Vue({
                 offset: 0,
             }
             this.genes.push(new_gene);
+        },
+        copyGene: function() {
+            var copy_gene = Object.assign({}, this.genes[this.editing]);
+            copy_gene.key = this.genes.length;
+            var min = Math.min(copy_gene.from, copy_gene.to);
+            copy_gene.from -= min;
+            copy_gene.to   -= min;
+            this.genes.push(copy_gene);
         },
         deleteGene: function() {
             this.genes[this.editing].visible = false;
