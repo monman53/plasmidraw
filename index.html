@@ -5,13 +5,14 @@
 
 
 <style>
-/*
-.gene-item:hover {
-    fill: red;
-}
-*/
-path {
-    draggable: false;
+svg {
+    user-select:none;
+    -webkit-user-select:none;
+    -ms-user-select: none;
+    -moz-user-select:none;
+    -khtml-user-select:none;
+    -webkit-user-drag:none;
+    -khtml-user-drag:none;
 }
 </style>
 
@@ -22,19 +23,37 @@ path {
 </header>
 
 <div id='plasmid'>
-    <button v-on:click='addGene'>Add Gene</button>
-    <input v-if='editing_color != undefined' type='color' v-model='genes[editing_color].color'></input>
-    <br>
 
-    <svg width='500px' height='500px' viewBox='-1.5 -1.5 3 3' id='plasmid-svg'
-        @mousemove='mouseMove'
-        @mouseup='mouseUp'>
-        <circle cx='0' cy='0' r='1' stroke='black' fill='none' stroke-width='0.01' />
-        <gene-item v-for='gene in genes' :mouse_pos='mouse_pos' :gene='gene' :key='gene.key' @edit-gene='editGene(gene.key, gene.which)'></gene>
-    </svg>
+    <div style='float: left'>
+        <svg width='600px' height='600px' viewBox='-1.5 -1.5 3 3' id='plasmid-svg'
+            @mousemove='mouseMove'
+            @mouseup='mouseUp'>
+            <circle cx='0' cy='0' r='1' stroke='black' fill='none' stroke-width='0.01' />
+            <gene-item
+                v-for='gene in genes'
+                :mouse_pos='mouse_pos'
+                :gene='gene'
+                :key='gene.key'
+                :g_style='g_style'
+                @edit-gene='editGene(gene.key, gene.which)'></gene>
+        </svg>
+    </div>
+
+    <div>
+        <button v-on:click='addGene'>Add Gene</button><br>
+        width<input type='range' min='0' max='0.5' step='0.01' v-model='g_style.dr' /><br>
+        arrow<input type='range' min='0' max='0.1' step='0.002' v-model='g_style.darrow' /><br>
+        stroke<input type='checkbox' v-model='g_style.stroke' /><br>
+
+        <div v-if='editing != undefined'>
+            <h3>Edit</h3>
+            color<input type='color' v-model='genes[editing].color' /><br>
+            <button v-on:click='deleteGene'>Delete Gene</button><br>
+        </div>
+    </div>
 </div>
 
-<footer>
+<footer style='clear: both'>
 <p>powered by Vue.js and SVG.</p>
 </footer>
 
@@ -43,11 +62,11 @@ path {
 
 Vue.component('gene-item', { // {{{
     template: '<g v-on:mouseenter="mouseEnter" v-on:mouseleave="mouseLeave">'+
-                '<path v-if="gene.visible" @mousedown="mouseDownAll" :d="d" :fill="gene.color" stroke="black "stroke-width="0.01" stroke-location="inside"   class="gene-item"/>'+
-                '<circle v-if="gene.visible && gene.hover" fill="#FFFFFF00" stroke="black" stroke-width="0.01" :cx="sx" :cy="sy" r="0.03" @mousedown="mouseDownFrom"/>'+
-                '<circle v-if="gene.visible && gene.hover" fill="#FFFFFF00" stroke="black" stroke-width="0.01" :cx="tx" :cy="ty" r="0.03" @mousedown="mouseDownTo"/>'+
+                '<path v-if="gene.visible" @mousedown="mouseDownAll" :d="d" :fill="gene.color" stroke="black" :stroke-width="g_style.stroke ? 0.01 : 0" class="gene-item"/>'+
+                '<circle v-if="gene.visible && gene.hover" fill="#FFFFFF00" stroke="black" stroke-width="0.01" :cx="sx" :cy="sy" r="0.04" @mousedown="mouseDownFrom"/>'+
+                '<circle v-if="gene.visible && gene.hover" fill="#FFFFFF00" stroke="black" stroke-width="0.01" :cx="tx" :cy="ty" r="0.04" @mousedown="mouseDownTo"/>'+
               '</g>', 
-    props: ['gene', 'mouse_pos'], 
+    props: ['gene', 'g_style', 'mouse_pos'], 
     methods: {
         mouseEnter: function() {
             this.gene.hover = true;
@@ -87,7 +106,7 @@ Vue.component('gene-item', { // {{{
             var from = this.gene.from;
             var to = this.gene.to;
 
-            var darrow = Math.min(Math.abs(from-to), 0.01);
+            var darrow = Math.min(Math.abs(from-to), this.g_style.darrow);
 
             var sx =  r*Math.sin(from*2*Math.PI);
             var sy = -r*Math.cos(from*2*Math.PI);
@@ -98,7 +117,7 @@ Vue.component('gene-item', { // {{{
             var a = from <= to ? 1 : 0;
             var b = Math.abs(from-to) >= 0.5+darrow ? 1 : 0;
 
-            var dr = 0.08;
+            var dr = Math.min(this.g_style.dr, 1);
 
             var res = '';
             res += `m ${sx*(1+dr)} ${sy*(1+dr)}`;
@@ -123,8 +142,12 @@ var plasmid = new Vue({
     data: {
         genes: [],
         mouse_pos: 0,
+        g_style: {
+            dr: 0.08,
+            darrow: 0.01,
+            stroke: true,
+        },
         editing: undefined,
-        editing_color: undefined,
     },
     methods: {
         addGene: function() {
@@ -142,9 +165,13 @@ var plasmid = new Vue({
             }
             this.genes.push(new_gene);
         },
+        deleteGene: function() {
+            this.genes[this.editing].visible = false;
+            this.editing = undefined;
+        },
         editGene: function(key) {
             this.editing = key;
-            this.editing_color = key;
+            this.drag = true;
         },
         mouseMove: function(event) {
             var svg = document.getElementById('plasmid-svg');
@@ -154,22 +181,23 @@ var plasmid = new Vue({
             var pos = (Math.atan2(-x, y) + Math.PI)/(2*Math.PI);
             this.mouse_pos = pos;
 
-            if(this.editing == undefined){
+            if(!this.drag){
                 return;
             }
 
             var which = this.genes[this.editing].which;
             var offset = this.genes[this.editing].offset;
             if(which == 'all'){
-                this.genes[this.editing].from += pos-offset;
-                this.genes[this.editing].to += pos-offset;
+                this.genes[this.editing].from = Math.min(Math.max(this.genes[this.editing].from+pos-offset, 0), 1);
+                this.genes[this.editing].to = Math.min(Math.max(this.genes[this.editing].to+pos-offset, 0), 1);
                 this.genes[this.editing].offset = pos;
             }else{
                 this.genes[this.editing][which] = this.mouse_pos;
             }
         },
         mouseUp: function() {
-            this.editing = undefined;
+            this.drag = false;
+            //this.editing = undefined;
         }, 
     }, 
 });
