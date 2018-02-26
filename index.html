@@ -35,7 +35,8 @@ svg {
                 :gene='gene'
                 :key='gene.key'
                 :g_style='g_style'
-                @edit-gene='editGene(gene.key, gene.which)'></gene>
+                @edit-gene='editGene(gene.key, gene.which)'>
+            </gene-item>
         </svg>
     </div>
 
@@ -45,6 +46,7 @@ svg {
         arrow length<input type='range' min='0' max='0.1' step='0.002' v-model='g_style.darrow' /><br>
         arrow width<input type='range' min='0' max='2' step='0.1' v-model='g_style.warrow' /><br>
         stroke<input type='checkbox' v-model='g_style.stroke' /><br>
+        <button v-on:click='download'>SVG Download</button><br>
 
         <div v-if='editing != undefined'>
             <h3>Edit</h3>
@@ -130,12 +132,11 @@ Vue.component('gene-item', { // {{{
                 res += `L ${tx} ${ty}`;
                 res += `L ${mx*(1-dr-dr*wr)} ${my*(1-dr-dr*wr)}`;
                 res += `L ${mx*(1-dr)} ${my*(1-dr)}`;
-                res += `A ${r*(1-dr)} ${r*(1-dr)} 0 ${b} ${1-a} ${sx*(1-dr)} ${sy*(1-dr)}`;
             }else{
                 res += `A ${r*(1+dr)} ${r*(1+dr)} 0 ${b} ${a} ${tx*(1+dr)} ${ty*(1+dr)}`;
                 res += `L ${tx*(1-dr)} ${ty*(1-dr)}`;
-                res += `A ${r*(1-dr)} ${r*(1-dr)} 0 ${b} ${1-a} ${sx*(1-dr)} ${sy*(1-dr)}`;
             }
+            res += `A ${r*(1-dr)} ${r*(1-dr)} 0 ${b} ${1-a} ${sx*(1-dr)} ${sy*(1-dr)}`;
             res += `L ${sx*(1+dr)} ${sy*(1+dr)}`;
             return res;
         }, 
@@ -183,7 +184,7 @@ var plasmid = new Vue({
             var svg = document.getElementById('plasmid-svg');
             var rect = svg.getBoundingClientRect();
             var x = event.clientX - rect.left - rect.width/2;
-            var y = event.clientY - rect.top - rect.height/2;
+            var y = event.clientY - rect.top  - rect.height/2;
             var pos = (Math.atan2(-x, y) + Math.PI)/(2*Math.PI);
             this.mouse_pos = pos;
 
@@ -194,8 +195,8 @@ var plasmid = new Vue({
             var which = this.genes[this.editing].which;
             var offset = this.genes[this.editing].offset;
             if(which == 'all'){
-                this.genes[this.editing].from = Math.min(Math.max(this.genes[this.editing].from+pos-offset, 0), 1);
-                this.genes[this.editing].to = Math.min(Math.max(this.genes[this.editing].to+pos-offset, 0), 1);
+                this.genes[this.editing].from = Math.min(Math.max(this.genes[this.editing].from + pos-offset, 0), 1);
+                this.genes[this.editing].to   = Math.min(Math.max(this.genes[this.editing].to   + pos-offset, 0), 1);
                 this.genes[this.editing].offset = pos;
             }else{
                 this.genes[this.editing][which] = this.mouse_pos;
@@ -203,8 +204,18 @@ var plasmid = new Vue({
         },
         mouseUp: function() {
             this.drag = false;
-            //this.editing = undefined;
         }, 
+        download: function() {
+            var svgData = document.getElementById("plasmid-svg").outerHTML;
+            var svgBlob = new Blob([svgData], {type:"image/svg+xml;charset=utf-8"});
+            var svgUrl = URL.createObjectURL(svgBlob);
+            var downloadLink = document.createElement("a");
+            downloadLink.href = svgUrl;
+            downloadLink.download = "plasmid.svg";
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
+        },
     }, 
 });
 </script>
