@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
 <script src="https://unpkg.com/vue"></script>
-
 <title>plasmidraw</title>
+
 
 <style>
 /*
@@ -12,15 +12,18 @@
 */
 </style>
 
+
 <header>
 <h1>plasmidraw</h1>
 <p>plasmid diagram drawer</p>
 </header>
 
 <div id='plasmid'>
-    <svg width='500px' height='500px' viewBox='-1.5 -1.5 3 3'>
+    <button v-on:click='addGene'>Add Gene</button><br>
+
+    <svg width='500px' height='500px' viewBox='-1.5 -1.5 3 3' v-on:mousemove="mouseMove">
         <circle cx='0' cy='0' r='1' stroke='black' fill='none' stroke-width='0.01' />
-        <gene-item v-for='n in genes'></gene>
+        <gene-item v-for='gene in genes' :gene='gene' :key='gene.key'></gene>
     </svg>
 
     <br>
@@ -30,55 +33,58 @@
     <!--<input id='from' type='number' min='0' max='1' v-model='gene_edit.from'></input><br>-->
     <!--<label for='to'>to</label>-->
     <!--<input id='to' type='number' min='0' max='1' v-model='gene_edit.to'></input><br>-->
-    <h3>New</h3>
-    <button v-on:click='addGene'>Add</button>
 </div>
+
+<footer>
+<p>powered by Vue.js and SVG.</p>
+</footer>
+
 
 <script>
 
-Vue.component('gene-item', {
+Vue.component('gene-item', { // {{{
     template: '<g v-on:mouseenter="mouseEnter" v-on:mouseleave="mouseLeave">'+
-                '<path v-if="visible" :d="d" :fill="color" stroke="black "stroke-width="0.01" stroke-location="inside"   class="gene-item"/>'+
-                '<circle v-if="visible && hover" fill="white" stroke="black" stroke-width="0.01" :cx="sx" :cy="sy" r="0.03"/>'+
-                '<circle v-if="visible && hover" fill="white" stroke="black" stroke-width="0.01" :cx="tx" :cy="ty" r="0.03"/>'+
+                '<path v-if="gene.visible" :d="d" :fill="gene.color" stroke="black "stroke-width="0.01" stroke-location="inside"   class="gene-item"/>'+
+                '<circle v-if="gene.visible && gene.hover" fill="white" stroke="black" stroke-width="0.01" :cx="sx" :cy="sy" r="0.03" v-on:mousedown="mouseDown" v-on:mousemove="mouseMove" v-on:mouseup="mouseUp"/>'+
+                '<circle v-if="gene.visible && gene.hover" fill="white" stroke="black" stroke-width="0.01" :cx="tx" :cy="ty" r="0.03"/>'+
               '</g>', 
-    data: function() {
-        return {
-            r: 1.0, 
-            from: 0,
-            to: 0.1,
-            visible: true, 
-            color: "#DDDDDD",
-            hover: false, 
-        }
-    },
+    props: ['gene'], 
     methods: {
         mouseEnter: function() {
             //this.color = 'red';
-            this.hover = true;
+            this.gene.hover = true;
         },
         mouseLeave: function() {
             //this.color = '#DDDDDD';
-            this.hover = false;
+            this.gene.hover = false;
         },
+        mouseDown: function(event) {
+            console.log(event);
+        }, 
+        mouseMove: function(event) {
+            console.log(event);
+        },
+        mouseUp: function(event) {
+            console.log(event);
+        }, 
     }, 
     computed: {
         sx: function() {
-           return  this.r*Math.sin(this.from*2*Math.PI);
+           return  this.gene.r*Math.sin(this.gene.from*2*Math.PI);
         },
         sy: function() {
-           return -this.r*Math.cos(this.from*2*Math.PI);
+           return -this.gene.r*Math.cos(this.gene.from*2*Math.PI);
         },
         tx: function() {
-           return  this.r*Math.sin(this.to*2*Math.PI);
+           return  this.gene.r*Math.sin(this.gene.to*2*Math.PI);
         },
         ty: function() {
-           return -this.r*Math.cos(this.to*2*Math.PI);
+           return -this.gene.r*Math.cos(this.gene.to*2*Math.PI);
         },
         d: function() {
-            var r = this.r;
-            var from = this.from;
-            var to = this.to;
+            var r = this.gene.r;
+            var from = this.gene.from;
+            var to = this.gene.to;
             var sx =  r*Math.sin(from*2*Math.PI);
             var sy = -r*Math.cos(from*2*Math.PI);
             var tx =  r*Math.sin(to*2*Math.PI);
@@ -97,21 +103,30 @@ Vue.component('gene-item', {
             return res;
         }, 
     }, 
-});
+}); // }}}
 
 var plasmid = new Vue({
     el: "#plasmid", 
     data: {
-        genes: 0,
+        genes: [],
+        mouse_pos: 0,
     },
     methods: {
         addGene: function() {
-            this.genes++;
+            var new_gene = {
+                key: this.genes.length, 
+                r: 1.0, 
+                from: 0,
+                to: 0.1,
+                visible: true, 
+                color: "#DDDDDD",
+                hover: false, 
+                drag: false,
+            }
+            this.genes.push(new_gene);
+        },
+        mouseMove: function(event) {
         },
     }, 
 });
 </script>
-
-<footer>
-<p>powered by Vue.js and SVG</p>
-</footer>
