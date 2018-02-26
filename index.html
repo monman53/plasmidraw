@@ -42,12 +42,14 @@ svg {
     <div>
         <button v-on:click='addGene'>Add Gene</button><br>
         width<input type='range' min='0' max='0.5' step='0.01' v-model='g_style.dr' /><br>
-        arrow<input type='range' min='0' max='0.1' step='0.002' v-model='g_style.darrow' /><br>
+        arrow length<input type='range' min='0' max='0.1' step='0.002' v-model='g_style.darrow' /><br>
+        arrow width<input type='range' min='0' max='2' step='0.1' v-model='g_style.warrow' /><br>
         stroke<input type='checkbox' v-model='g_style.stroke' /><br>
 
         <div v-if='editing != undefined'>
             <h3>Edit</h3>
             color<input type='color' v-model='genes[editing].color' /><br>
+            arrow<input type='checkbox' v-model='genes[editing].arrow' /><br>
             <button v-on:click='deleteGene'>Delete Gene</button><br>
         </div>
     </div>
@@ -118,12 +120,15 @@ Vue.component('gene-item', { // {{{
             var b = Math.abs(from-to) >= 0.5+darrow ? 1 : 0;
 
             var dr = Math.min(this.g_style.dr, 1);
+            var wr = Math.min(this.g_style.warrow, 2);
 
             var res = '';
             res += `m ${sx*(1+dr)} ${sy*(1+dr)}`;
             if(this.gene.arrow){
                 res += `A ${r*(1+dr)} ${r*(1+dr)} 0 ${b} ${a} ${mx*(1+dr)} ${my*(1+dr)}`;
+                res += `L ${mx*(1+dr+dr*wr)} ${my*(1+dr+dr*wr)}`;
                 res += `L ${tx} ${ty}`;
+                res += `L ${mx*(1-dr-dr*wr)} ${my*(1-dr-dr*wr)}`;
                 res += `L ${mx*(1-dr)} ${my*(1-dr)}`;
                 res += `A ${r*(1-dr)} ${r*(1-dr)} 0 ${b} ${1-a} ${sx*(1-dr)} ${sy*(1-dr)}`;
             }else{
@@ -146,6 +151,7 @@ var plasmid = new Vue({
             dr: 0.08,
             darrow: 0.01,
             stroke: true,
+            warrow: 0,
         },
         editing: undefined,
     },
