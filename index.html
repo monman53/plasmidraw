@@ -10,6 +10,9 @@
     fill: red;
 }
 */
+path {
+    draggable: false;
+}
 </style>
 
 
@@ -19,7 +22,9 @@
 </header>
 
 <div id='plasmid'>
-    <button v-on:click='addGene'>Add Gene</button><br>
+    <button v-on:click='addGene'>Add Gene</button>
+    <input v-if='editing_color != undefined' type='color' v-model='genes[editing_color].color'></input>
+    <br>
 
     <svg width='500px' height='500px' viewBox='-1.5 -1.5 3 3' id='plasmid-svg'
         @mousemove='mouseMove'
@@ -91,7 +96,7 @@ Vue.component('gene-item', { // {{{
             var tx =  r*Math.sin(to*2*Math.PI);
             var ty = -r*Math.cos(to*2*Math.PI);
             var a = from <= to ? 1 : 0;
-            var b = Math.abs(from-to) >= 0.5 ? 1 : 0;
+            var b = Math.abs(from-to) >= 0.5+darrow ? 1 : 0;
 
             var dr = 0.08;
 
@@ -119,6 +124,7 @@ var plasmid = new Vue({
         genes: [],
         mouse_pos: 0,
         editing: undefined,
+        editing_color: undefined,
     },
     methods: {
         addGene: function() {
@@ -138,9 +144,9 @@ var plasmid = new Vue({
         },
         editGene: function(key) {
             this.editing = key;
+            this.editing_color = key;
         },
         mouseMove: function(event) {
-
             var svg = document.getElementById('plasmid-svg');
             var rect = svg.getBoundingClientRect();
             var x = event.clientX - rect.left - rect.width/2;
@@ -162,7 +168,7 @@ var plasmid = new Vue({
                 this.genes[this.editing][which] = this.mouse_pos;
             }
         },
-        mouseUp: function(event) {
+        mouseUp: function() {
             this.editing = undefined;
         }, 
     }, 
