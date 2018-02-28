@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
-<script src="https://unpkg.com/vue"></script>
+<meta name='viewport' content='width=device-width, initial-scale=1'>
+<!--<script src="https://cdn.jsdelivr.net/npm/vue@2.5.13/dist/vue.js"></script>-->
+<script src="https://cdn.jsdelivr.net/npm/vue@2.5.13/dist/vue.min.js"></script>
 <title>plasmidraw</title>
 
 
@@ -25,7 +27,8 @@ svg {
 
 <header>
 <h1>plasmidraw</h1>
-<p>plasmid diagram drawer</p>
+<p>Simple SVG drawer for plasmid map diagram.
+<a href='https://github.com/monman53/plasmidraw'>GitHub</a></p>
 </header>
 
 <div id='plasmid'>
@@ -54,10 +57,10 @@ svg {
         stroke<input type='checkbox' v-model='g_style.f_stroke' /><br>
         <button v-on:click='download'>SVG Download</button><br>
 
-        <div v-if='editing != undefined'>
+        <div v-if='this.gene != undefined'>
             <h3>Edit</h3>
-            color<input type='color' v-model='genes[editing].color' /><br>
-            arrow<input type='checkbox' v-model='genes[editing].f_arrow' /><br>
+            color<input type='color' v-model='gene.color' /><br>
+            arrow<input type='checkbox' v-model='gene.f_arrow' /><br>
             <button v-on:click='reverseGene'>Reverse</button><br>
             <button v-on:click='copyGene'>Copy</button><br>
             <button v-on:click='deleteGene'>Delete</button><br>
@@ -118,7 +121,7 @@ Vue.component('gene-item', {
         },
         f_knob_visible: function() {
             return this.gene.f_visible && this.f_hover;
-        }, 
+        },
         sx: function() {
             return  this.gene.r*Math.sin(this.gene.from*2*Math.PI);
         },
@@ -181,13 +184,14 @@ var plasmid = new Vue({
     el: "#plasmid", 
     data: {
         genes: [],
+        key_counter: 0,
         g_style: {
             dr: 0.08,
             darrow: 0.01,
             warrow: 0,
             f_stroke: true,
         },
-        editing: undefined,
+        gene: undefined,
         mouse_pos: 0,
         which: undefined,
         offset: 0,
@@ -195,7 +199,7 @@ var plasmid = new Vue({
     methods: {
         addGene: function() {
             var new_gene = {
-                key: this.genes.length, 
+                key: this.key_counter, 
                 r: 1.0, 
                 from: 0,
                 to: 0.1,
@@ -203,11 +207,12 @@ var plasmid = new Vue({
                 f_arrow: true,
                 f_visible: true, 
             }
-            this.editing = new_gene.key;
             this.genes.push(new_gene);
+            this.gene = this.genes[this.key_counter];
+            this.key_counter++;
         },
         copyGene: function() {
-            var copy_gene = Object.assign({}, this.genes[this.editing]);
+            var copy_gene = Object.assign({}, this.gene);
             copy_gene.key = this.genes.length;
             this.editing = copy_gene.key;
             var min = Math.min(copy_gene.from, copy_gene.to);
@@ -216,17 +221,27 @@ var plasmid = new Vue({
             this.genes.push(copy_gene);
         },
         reverseGene: function() {
-            var gene = this.genes[this.editing];
-            var tmp = gene.from;
-            gene.from = gene.to;
-            gene.to   = tmp;
+            var tmp = this.gene.from;
+            this.gene.from = this.gene.to;
+            this.gene.to   = tmp;
         },
         deleteGene: function() {
-            this.genes[this.editing].visible = false;
-            this.editing = undefined;
+            this.gene.visible = false;
+            for(var i=0;i<this.genes.length;i++){
+                if(this.genes[i].key == this.gene.key){
+                    this.genes.splice(i, 1);
+                    this.gene = undefined;
+                    break;
+                }
+            }
         },
         editGene: function(key, which) {
-            this.editing = key;
+            for(var i=0;i<this.genes.length;i++){
+                if(this.genes[i].key == key){
+                    this.gene = this.genes[i];
+                    break;
+                }
+            }
             this.which = which;
             this.offset = this.mouse_pos;
             this.drag = true;
@@ -243,16 +258,14 @@ var plasmid = new Vue({
                 return;
             }
 
-            var gene = this.genes[this.editing];
-
             var which = this.which;
             var offset = this.offset;
             if(which == 'all'){
-                gene.from = Math.min(Math.max(gene.from + pos-offset, 0), 1);
-                gene.to   = Math.min(Math.max(gene.to   + pos-offset, 0), 1);
+                this.gene.from = Math.min(Math.max(this.gene.from + pos-offset, 0), 1);
+                this.gene.to   = Math.min(Math.max(this.gene.to   + pos-offset, 0), 1);
                 this.offset = pos;
             }else{
-                gene[which] = this.mouse_pos;
+                this.gene[which] = this.mouse_pos;
             }
         },
         mouseUp: function() {
