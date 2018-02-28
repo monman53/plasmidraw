@@ -52,8 +52,9 @@ svg {
             <h3>Edit</h3>
             color<input type='color' v-model='genes[editing].color' /><br>
             arrow<input type='checkbox' v-model='genes[editing].arrow' /><br>
-            <button v-on:click='copyGene'>Copy Gene</button><br>
-            <button v-on:click='deleteGene'>Delete Gene</button><br>
+            <button v-on:click='reverseGene'>Reverse</button><br>
+            <button v-on:click='copyGene'>Copy</button><br>
+            <button v-on:click='deleteGene'>Delete</button><br>
         </div>
     </div>
 </div>
@@ -182,6 +183,11 @@ var plasmid = new Vue({
             copy_gene.from -= min;
             copy_gene.to   -= min;
             this.genes.push(copy_gene);
+        },
+        reverseGene: function() {
+            var tmp = this.genes[this.editing].from;
+            this.genes[this.editing].from = this.genes[this.editing].to;
+            this.genes[this.editing].to   = tmp;
         },
         deleteGene: function() {
             this.genes[this.editing].visible = false;
