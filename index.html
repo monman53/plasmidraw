@@ -14,6 +14,12 @@ svg {
     -webkit-user-drag:none;
     -khtml-user-drag:none;
 }
+
+.knob {
+    fill: #FFFFFF00;
+    stroke: black;
+    stroke-width: 0.01;
+}
 </style>
 
 
@@ -35,7 +41,7 @@ svg {
                 :gene='gene'
                 :key='gene.key'
                 :g_style='g_style'
-                @edit-gene='editGene(gene.key, gene.which)'>
+                @edit-gene='editGene'>
             </gene-item>
         </svg>
     </div>
@@ -45,13 +51,13 @@ svg {
         width<input type='range' min='0' max='0.5' step='0.01' v-model='g_style.dr' /><br>
         arrow length<input type='range' min='0' max='0.1' step='0.002' v-model='g_style.darrow' /><br>
         arrow width<input type='range' min='0' max='2' step='0.1' v-model='g_style.warrow' /><br>
-        stroke<input type='checkbox' v-model='g_style.stroke' /><br>
+        stroke<input type='checkbox' v-model='g_style.f_stroke' /><br>
         <button v-on:click='download'>SVG Download</button><br>
 
         <div v-if='editing != undefined'>
             <h3>Edit</h3>
             color<input type='color' v-model='genes[editing].color' /><br>
-            arrow<input type='checkbox' v-model='genes[editing].arrow' /><br>
+            arrow<input type='checkbox' v-model='genes[editing].f_arrow' /><br>
             <button v-on:click='reverseGene'>Reverse</button><br>
             <button v-on:click='copyGene'>Copy</button><br>
             <button v-on:click='deleteGene'>Delete</button><br>
@@ -66,97 +72,125 @@ svg {
 
 <script>
 
-Vue.component('gene-item', { // {{{
-    template: '<g v-on:mouseenter="mouseEnter" v-on:mouseleave="mouseLeave">'+
-                '<path v-if="gene.visible" @mousedown="mouseDownAll" :d="d" :fill="gene.color" stroke="black" :stroke-width="g_style.stroke ? 0.01 : 0" class="gene-item"/>'+
-                '<circle v-if="gene.visible && gene.hover" fill="#FFFFFF00" stroke="black" stroke-width="0.01" :cx="sx" :cy="sy" r="0.04" @mousedown="mouseDownFrom"/>'+
-                '<circle v-if="gene.visible && gene.hover" fill="#FFFFFF00" stroke="black" stroke-width="0.01" :cx="tx" :cy="ty" r="0.04" @mousedown="mouseDownTo"/>'+
-              '</g>', 
+Vue.component('gene-item', { 
+    template: `<g v-on:mouseenter="f_hover=true" v-on:mouseleave="f_hover=false">
+                <path 
+                    v-if="gene.f_visible"
+                    @mousedown="mouseDown('all')"
+                    :d="d"
+                    :fill="gene.color"
+                    stroke="black"
+                    :stroke-width="stroke_width"
+                    class="gene-item"
+                />
+                <circle
+                    v-if="f_knob_visible"
+                    :cx="sx"
+                    :cy="sy"
+                    r="0.04"
+                    @mousedown="mouseDown('from')"
+                    class="knob"
+                />
+                <circle
+                    v-if="f_knob_visible"
+                    :cx="tx"
+                    :cy="ty"
+                    r="0.04"
+                    @mousedown="mouseDown('to')"
+                    class="knob"
+                />
+              </g>`,
     props: ['gene', 'g_style', 'mouse_pos'], 
+    data: function() {
+        return {
+            f_hover: false,
+        }
+    },
     methods: {
-        mouseEnter: function() {
-            this.gene.hover = true;
-        },
-        mouseLeave: function() {
-            this.gene.hover = false;
-        },
-        mouseDownAll: function(){
-            this.gene.which = 'all';
+        mouseDown: function(which) {
             this.gene.offset = this.mouse_pos;
-            this.$emit('edit-gene');
-        }, 
-        mouseDownFrom: function() {
-            this.gene.which = 'from';
-            this.$emit('edit-gene');
-        }, 
-        mouseDownTo: function() {
-            this.gene.which = 'to';
-            this.$emit('edit-gene');
+            this.$emit('edit-gene', this.gene.key, which);
         }, 
     }, 
     computed: {
+        stroke_width: function() {
+            return this.g_style.f_stroke ? 0.01 : 0;
+        },
+        f_knob_visible: function() {
+            return this.gene.f_visible && this.f_hover;
+        }, 
         sx: function() {
-           return  this.gene.r*Math.sin(this.gene.from*2*Math.PI);
+            return  this.gene.r*Math.sin(this.gene.from*2*Math.PI);
         },
         sy: function() {
-           return -this.gene.r*Math.cos(this.gene.from*2*Math.PI);
+            return -this.gene.r*Math.cos(this.gene.from*2*Math.PI);
         },
         tx: function() {
-           return  this.gene.r*Math.sin(this.gene.to*2*Math.PI);
+            return  this.gene.r*Math.sin(this.gene.to*2*Math.PI);
         },
         ty: function() {
-           return -this.gene.r*Math.cos(this.gene.to*2*Math.PI);
+            return -this.gene.r*Math.cos(this.gene.to*2*Math.PI);
         },
         d: function() {
-            var r = this.gene.r;
+            var r    = this.gene.r;
             var from = this.gene.from;
-            var to = this.gene.to;
+            var to   = this.gene.to;
 
             var darrow = Math.min(Math.abs(from-to), this.g_style.darrow);
-
-            var sx =  r*Math.sin(from*2*Math.PI);
-            var sy = -r*Math.cos(from*2*Math.PI);
-            var mx =  r*Math.sin((to+(to > from ? -darrow : darrow))*2*Math.PI);
-            var my = -r*Math.cos((to+(to > from ? -darrow : darrow))*2*Math.PI);
-            var tx =  r*Math.sin(to*2*Math.PI);
-            var ty = -r*Math.cos(to*2*Math.PI);
-            var a = from <= to ? 1 : 0;
-            var b = Math.abs(from-to) >= 0.5+darrow ? 1 : 0;
 
             var dr = Math.min(this.g_style.dr, 1);
             var wr = Math.min(this.g_style.warrow, 2);
 
-            var res = '';
-            res += `m ${sx*(1+dr)} ${sy*(1+dr)}`;
-            if(this.gene.arrow){
-                res += `A ${r*(1+dr)} ${r*(1+dr)} 0 ${b} ${a} ${mx*(1+dr)} ${my*(1+dr)}`;
-                res += `L ${mx*(1+dr+dr*wr)} ${my*(1+dr+dr*wr)}`;
-                res += `L ${tx} ${ty}`;
-                res += `L ${mx*(1-dr-dr*wr)} ${my*(1-dr-dr*wr)}`;
-                res += `L ${mx*(1-dr)} ${my*(1-dr)}`;
+            var sx = this.sx;
+            var sy = this.sy;
+            var mx = this.mx;
+            var my = this.my;
+            var mx =  r*Math.sin((to+(to > from ? -darrow : darrow))*2*Math.PI);
+            var my = -r*Math.cos((to+(to > from ? -darrow : darrow))*2*Math.PI);
+            var tx = this.tx;
+            var ty = this.ty;
+
+            var a = from <= to ? 1 : 0;
+            var b = Math.abs(from-to) >= 0.5+darrow ? 1 : 0;
+
+            var res;
+            if(this.gene.f_arrow){
+                res = 
+                    `m ${sx*(1+dr)} ${sy*(1+dr)}
+                     A ${r*(1+dr)} ${r*(1+dr)}, 0 ${b} ${a}, ${mx*(1+dr)} ${my*(1+dr)}
+                     L ${mx*(1+dr+dr*wr)} ${my*(1+dr+dr*wr)}
+                     L ${tx} ${ty}
+                     L ${mx*(1-dr-dr*wr)} ${my*(1-dr-dr*wr)}
+                     L ${mx*(1-dr)} ${my*(1-dr)}
+                     A ${r*(1-dr)} ${r*(1-dr)}, 0 ${b} ${1-a}, ${sx*(1-dr)} ${sy*(1-dr)}
+                     L ${sx*(1+dr)} ${sy*(1+dr)}`;
             }else{
-                res += `A ${r*(1+dr)} ${r*(1+dr)} 0 ${b} ${a} ${tx*(1+dr)} ${ty*(1+dr)}`;
-                res += `L ${tx*(1-dr)} ${ty*(1-dr)}`;
+                res =
+                    `m ${sx*(1+dr)} ${sy*(1+dr)}
+                     A ${r*(1+dr)} ${r*(1+dr)}, 0 ${b} ${a}, ${tx*(1+dr)} ${ty*(1+dr)}
+                     L ${tx*(1-dr)} ${ty*(1-dr)}
+                     A ${r*(1-dr)} ${r*(1-dr)}, 0 ${b} ${1-a}, ${sx*(1-dr)} ${sy*(1-dr)}
+                     L ${sx*(1+dr)} ${sy*(1+dr)}`;
             }
-            res += `A ${r*(1-dr)} ${r*(1-dr)} 0 ${b} ${1-a} ${sx*(1-dr)} ${sy*(1-dr)}`;
-            res += `L ${sx*(1+dr)} ${sy*(1+dr)}`;
             return res;
-        }, 
-    }, 
-}); // }}}
+        },
+    },
+});
 
 var plasmid = new Vue({
     el: "#plasmid", 
     data: {
         genes: [],
-        mouse_pos: 0,
         g_style: {
             dr: 0.08,
             darrow: 0.01,
-            stroke: true,
             warrow: 0,
+            f_stroke: true,
         },
         editing: undefined,
+        mouse_pos: 0,
+        which: undefined,
+        offset: 0,
     },
     methods: {
         addGene: function() {
@@ -165,12 +199,9 @@ var plasmid = new Vue({
                 r: 1.0, 
                 from: 0,
                 to: 0.1,
-                visible: true, 
                 color: "#DDDDDD",
-                hover: false, 
-                which: 'from',
-                arrow: true,
-                offset: 0,
+                f_arrow: true,
+                f_visible: true, 
             }
             this.editing = new_gene.key;
             this.genes.push(new_gene);
@@ -185,16 +216,19 @@ var plasmid = new Vue({
             this.genes.push(copy_gene);
         },
         reverseGene: function() {
-            var tmp = this.genes[this.editing].from;
-            this.genes[this.editing].from = this.genes[this.editing].to;
-            this.genes[this.editing].to   = tmp;
+            var gene = this.genes[this.editing];
+            var tmp = gene.from;
+            gene.from = gene.to;
+            gene.to   = tmp;
         },
         deleteGene: function() {
             this.genes[this.editing].visible = false;
             this.editing = undefined;
         },
-        editGene: function(key) {
+        editGene: function(key, which) {
             this.editing = key;
+            this.which = which;
+            this.offset = this.mouse_pos;
             this.drag = true;
         },
         mouseMove: function(event) {
@@ -209,19 +243,21 @@ var plasmid = new Vue({
                 return;
             }
 
-            var which = this.genes[this.editing].which;
-            var offset = this.genes[this.editing].offset;
+            var gene = this.genes[this.editing];
+
+            var which = this.which;
+            var offset = this.offset;
             if(which == 'all'){
-                this.genes[this.editing].from = Math.min(Math.max(this.genes[this.editing].from + pos-offset, 0), 1);
-                this.genes[this.editing].to   = Math.min(Math.max(this.genes[this.editing].to   + pos-offset, 0), 1);
-                this.genes[this.editing].offset = pos;
+                gene.from = Math.min(Math.max(gene.from + pos-offset, 0), 1);
+                gene.to   = Math.min(Math.max(gene.to   + pos-offset, 0), 1);
+                this.offset = pos;
             }else{
-                this.genes[this.editing][which] = this.mouse_pos;
+                gene[which] = this.mouse_pos;
             }
         },
         mouseUp: function() {
             this.drag = false;
-        }, 
+        },
         download: function() {
             var svgData = document.getElementById("plasmid-svg").outerHTML;
             var svgBlob = new Blob([svgData], {type:"image/svg+xml;charset=utf-8"});
