@@ -319,12 +319,22 @@ var plasmid = new Vue({
 
             var which = this.which;
             var offset = this.offset;
+            var min = Math.min(this.gene.from, this.gene.to);
+            var max = Math.max(this.gene.from, this.gene.to);
+            var d = 0;
             if(which == 'all'){
-                this.gene.from = Math.min(Math.max(this.gene.from + pos-offset, 0), 1);
-                this.gene.to   = Math.min(Math.max(this.gene.to   + pos-offset, 0), 1);
+                if(max + pos-offset > 1){
+                    d = 1 - max;
+                }else if(min + pos-offset < 0){
+                    d = 0 - min;
+                }else{
+                    d = pos-offset;
+                }
+                this.gene.from += d;
+                this.gene.to   += d;
                 this.offset = pos;
             }else{
-                this.gene[which] = this.mouse_pos;
+                this.gene[which] = pos;
             }
         },
         mouseUp: function() {
