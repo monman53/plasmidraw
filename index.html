@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
 <meta name='viewport' content='width=device-width, initial-scale=1'>
-<script src="https://cdn.jsdelivr.net/npm/vue@2.5.13/dist/vue.js"></script>
-<!--<script src="https://cdn.jsdelivr.net/npm/vue@2.5.13/dist/vue.min.js"></script>-->
+<!--<script src="https://cdn.jsdelivr.net/npm/vue@2.5.13/dist/vue.js"></script>-->
+<script src="https://cdn.jsdelivr.net/npm/vue@2.5.13/dist/vue.min.js"></script>
 <title>plasmidraw</title>
 
 
@@ -41,6 +41,7 @@ text {
         <svg width='600px' height='600px' viewBox='-1.5 -1.5 3 3' id='plasmid-svg'
             @mousemove='mouseMove'
             @mouseup='mouseUp'>
+            <rect x='-1.5' y='-1.5' width='3' height='3' fill='whilte' fill-opacity='0' @mousedown='gene=null' />
             <circle cx='0' cy='0' r='1' stroke='black' fill='none' stroke-width='0.01' />
             <gene-item
                 v-for='g in genes'
@@ -56,25 +57,57 @@ text {
 
     <div>
         <button v-on:click='addGene'>Add Gene</button><br>
-        width<input type='range' min='0' max='0.5' step='0.01' v-model='g_style.dr' /><br>
-        arrow length<input type='range' min='0' max='0.1' step='0.002' v-model='g_style.darrow' /><br>
-        arrow width<input type='range' min='0' max='2' step='0.1' v-model='g_style.warrow' /><br>
-        stroke<input type='checkbox' v-model='g_style.f_stroke' /><br>
-        <button v-on:click='download'>SVG Download</button><br>
 
-        <div v-if='gene != undefined'>
+        width
+        <input type='range' min='0' max='0.5' step='0.01' 
+            v-model='g_style.dr' /><br>
+        
+        arrow length
+        <input type='range' min='0' max='0.1' step='0.002' 
+            v-model='g_style.darrow' /><br>
+
+        arrow width
+        <input type='range' min='0' max='2' step='0.1' 
+            v-model='g_style.warrow' /><br>
+
+        stroke
+        <input type='checkbox' 
+            v-model='g_style.f_stroke' /><br>
+
+        <button @click='download'>SVG Export</button><br>
+        <button @click='save'>Save</button><br>
+        Load<input type="file" id="file-input" accept='.json' @change='load'/>
+
+        <div v-if='gene'>
             <h3>Edit</h3>
-            name<input v-model='gene.name'/><br>
-            color<input type='color' v-model='gene.color' /><br>
-            arrow<input type='checkbox' v-model='gene.f_arrow' /><br>
+            name
+            <input v-model='gene.name'/><br>
+
+            color
+            <input type='color' v-model='gene.color' /><br>
+
+            arrow
+            <input type='checkbox' v-model='gene.f_arrow' /><br>
+
             style<br>
             <input type='radio' :value='0' v-model='gene.style_id'>default<br>
-            <input type='radio' :value='undefined' v-model='gene.style_id'>custom<br>
-            <div v-if='gene.style_id == undefined'>
-                width<input type='range' min='0' max='0.5' step='0.01' v-model='gene.style.dr' /><br>
-                arrow length<input type='range' min='0' max='0.1' step='0.002' v-model='gene.style.darrow' /><br>
-                arrow width<input type='range' min='0' max='2' step='0.1' v-model='gene.style.warrow' /><br>
-                stroke<input type='checkbox' v-model='gene.style.f_stroke' /><br>
+            <input type='radio' :value='null' v-model='gene.style_id'>custom<br>
+            <div v-if='gene.style_id === null'>
+                width
+                <input type='range' min='0' max='0.5' step='0.01' 
+                    v-model='gene.style.dr' /><br>
+
+                arrow length
+                <input type='range' min='0' max='0.1' step='0.002' 
+                    v-model='gene.style.darrow' /><br>
+
+                arrow width
+                <input type='range' min='0' max='2' step='0.1'
+                    v-model='gene.style.warrow' /><br>
+
+                stroke
+                <input type='checkbox'
+                    v-model='gene.style.f_stroke' /><br>
             </div>
             <button v-on:click='reverseGene'>Reverse</button><br>
             <button v-on:click='copyGene'>Copy</button><br>

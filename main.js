@@ -53,7 +53,7 @@ Vue.component('gene-item', {
     }, 
     computed: {
         style: function() {
-            if(this.gene.style_id == undefined){
+            if(this.gene.style_id === null){
                 return this.gene.style;
             }else{
                 return this.g_style;
@@ -154,7 +154,7 @@ var plasmid = new Vue({
         },
         gene: null,
         mouse_pos: 0,
-        which: undefined,
+        which: null,
         offset: 0,
     },
     methods: {
@@ -257,6 +257,37 @@ var plasmid = new Vue({
             document.body.appendChild(downloadLink);
             downloadLink.click();
             document.body.removeChild(downloadLink);
+        },
+        save: function() {
+            this.gene = null;
+            var save_json = {
+                genes: this.genes,
+                key_counter: this.key_counter,
+                g_style: this.g_style, 
+            };
+            var jsonData = JSON.stringify(save_json);
+            var jsonBlob = new Blob([jsonData], {type:"text/json;charset=utf-8"});
+            var jsonUrl = URL.createObjectURL(jsonBlob);
+            var downloadLink = document.createElement("a");
+            downloadLink.href = jsonUrl;
+            downloadLink.download = "plasmid.json";
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
+        },
+        load: function(event) {
+            var reader = new FileReader();
+            reader.readAsText(event.target.files[0]);
+            console.log(this.genes);
+            reader.onload = this.loadFile;
+        },
+        loadFile: function(event) {
+            var data = JSON.parse(event.target.result);
+            this.key_counter = data['key_counter'];
+            this.genes = data['genes'];
+            for(var key in data){
+                this[key] = data[key];
+            }
         },
     }, 
 });
