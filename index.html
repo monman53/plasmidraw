@@ -61,6 +61,15 @@ svg {
             <h3>Edit</h3>
             color<input type='color' v-model='gene.color' /><br>
             arrow<input type='checkbox' v-model='gene.f_arrow' /><br>
+            style<br>
+            <input type='radio' :value='0' v-model='gene.style_id'>default<br>
+            <input type='radio' :value='undefined' v-model='gene.style_id'>custom<br>
+            <div v-if='this.gene.style_id == undefined'>
+                width<input type='range' min='0' max='0.5' step='0.01' v-model='gene.style.dr' /><br>
+                arrow length<input type='range' min='0' max='0.1' step='0.002' v-model='gene.style.darrow' /><br>
+                arrow width<input type='range' min='0' max='2' step='0.1' v-model='gene.style.warrow' /><br>
+                stroke<input type='checkbox' v-model='gene.style.f_stroke' /><br>
+            </div>
             <button v-on:click='reverseGene'>Reverse</button><br>
             <button v-on:click='copyGene'>Copy</button><br>
             <button v-on:click='deleteGene'>Delete</button><br>
@@ -107,7 +116,9 @@ Vue.component('gene-item', {
     data: function() {
         return {
             f_hover: false,
-        }
+        };
+    },
+    created: function() {
     },
     methods: {
         mouseDown: function(which) {
@@ -116,8 +127,15 @@ Vue.component('gene-item', {
         }, 
     }, 
     computed: {
+        style: function() {
+            if(this.gene.style_id == undefined){
+                return this.gene.style;
+            }else{
+                return this.g_style;
+            }
+        }, 
         stroke_width: function() {
-            return this.g_style.f_stroke ? 0.01 : 0;
+            return this.style.f_stroke ? 0.01 : 0;
         },
         f_knob_visible: function() {
             return this.gene.f_visible && this.f_hover;
@@ -139,10 +157,10 @@ Vue.component('gene-item', {
             var from = this.gene.from;
             var to   = this.gene.to;
 
-            var darrow = Math.min(Math.abs(from-to), this.g_style.darrow);
+            var darrow = Math.min(Math.abs(from-to), this.style.darrow);
 
-            var dr = Math.min(this.g_style.dr, 1);
-            var wr = Math.min(this.g_style.warrow, 2);
+            var dr = Math.min(this.style.dr, 1);
+            var wr = Math.min(this.style.warrow, 2);
 
             var sx = this.sx;
             var sy = this.sy;
@@ -186,6 +204,7 @@ var plasmid = new Vue({
         genes: [],
         key_counter: 0,
         g_style: {
+            r: 1.0,
             dr: 0.08,
             darrow: 0.01,
             warrow: 0,
@@ -203,22 +222,28 @@ var plasmid = new Vue({
                 r: 1.0, 
                 from: 0,
                 to: 0.1,
-                color: "#DDDDDD",
+                color: "#FFAA00",
                 f_arrow: true,
                 f_visible: true, 
+                style_id: 0,
+                style: {},
             }
+            Object.assign(new_gene.style, this.g_style);
+
             this.genes.push(new_gene);
-            this.gene = this.genes[this.key_counter];
+            //this.gene = this.genes[this.key_counter];
+            this.gene = this.genes[this.genes.length-1];
             this.key_counter++;
         },
         copyGene: function() {
             var copy_gene = Object.assign({}, this.gene);
-            copy_gene.key = this.genes.length;
-            this.editing = copy_gene.key;
+            copy_gene.key = this.key_counter;
+            this.key_counter++;
             var min = Math.min(copy_gene.from, copy_gene.to);
             copy_gene.from -= min;
             copy_gene.to   -= min;
             this.genes.push(copy_gene);
+            this.gene = this.genes[this.genes.length-1];
         },
         reverseGene: function() {
             var tmp = this.gene.from;
