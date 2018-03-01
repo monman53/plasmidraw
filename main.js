@@ -82,10 +82,10 @@ Vue.component('gene-item', {
             return (this.gene.from+this.gene.to)/2;
         },
         text_x: function() {
-            return this.gene.r*Math.sin(this.text_m*2*Math.PI)*(1-this.style.dr);
+            return this.gene.r*Math.sin(this.text_m*2*Math.PI)*(1-this.style.dr-0.04);
         },
         text_y: function() {
-            return -this.gene.r*Math.cos(this.text_m*2*Math.PI)*(1-this.style.dr);
+            return -this.gene.r*Math.cos(this.text_m*2*Math.PI)*(1-this.style.dr-0.04);
         },
         text_rotate: function(){
             return `rotate(${(this.text_m < 0.5 ? -90 : 90)+360*this.text_m} 
@@ -166,7 +166,7 @@ var plasmid = new Vue({
                 r: 1.0, 
                 from: 0,
                 to: 0.1,
-                color: "#FFFFFF",
+                color: "#9FCDFF",
                 f_arrow: true,
                 f_visible: true,
                 style_id: 0,
