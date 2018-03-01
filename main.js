@@ -246,17 +246,19 @@ var plasmid = new Vue({
         mouseUp: function() {
             this.drag = false;
         },
-        download: function() {
+        exportSVG: function() {
             this.gene = null;
-            var svgData = document.getElementById("plasmid-svg").outerHTML;
-            var svgBlob = new Blob([svgData], {type:"image/svg+xml;charset=utf-8"});
-            var svgUrl = URL.createObjectURL(svgBlob);
-            var downloadLink = document.createElement("a");
-            downloadLink.href = svgUrl;
-            downloadLink.download = "plasmid.svg";
-            document.body.appendChild(downloadLink);
-            downloadLink.click();
-            document.body.removeChild(downloadLink);
+            Vue.nextTick(function() {
+                var svgData = document.getElementById("plasmid-svg").outerHTML;
+                var svgBlob = new Blob([svgData], {type:"image/svg+xml;charset=utf-8"});
+                var svgUrl = URL.createObjectURL(svgBlob);
+                var downloadLink = document.createElement("a");
+                downloadLink.href = svgUrl;
+                downloadLink.download = "plasmid.svg";
+                document.body.appendChild(downloadLink);
+                downloadLink.click();
+                document.body.removeChild(downloadLink);
+            });
         },
         save: function() {
             this.gene = null;
