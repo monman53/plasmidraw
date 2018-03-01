@@ -126,14 +126,14 @@ Vue.component('gene-item', {
                      L ${mx*(1-dr-dr*wr)} ${my*(1-dr-dr*wr)}
                      L ${mx*(1-dr)} ${my*(1-dr)}
                      A ${r*(1-dr)} ${r*(1-dr)}, 0 ${b} ${1-a}, ${sx*(1-dr)} ${sy*(1-dr)}
-                     L ${sx*(1+dr)} ${sy*(1+dr)}`;
+                     Z`;
             }else{
                 res =
                     `m ${sx*(1+dr)} ${sy*(1+dr)}
                      A ${r*(1+dr)} ${r*(1+dr)}, 0 ${b} ${a}, ${tx*(1+dr)} ${ty*(1+dr)}
                      L ${tx*(1-dr)} ${ty*(1-dr)}
                      A ${r*(1-dr)} ${r*(1-dr)}, 0 ${b} ${1-a}, ${sx*(1-dr)} ${sy*(1-dr)}
-                     L ${sx*(1+dr)} ${sy*(1+dr)}`;
+                     Z`;
             }
             return res;
         },
@@ -156,6 +156,7 @@ var plasmid = new Vue({
         mouse_pos: 0,
         which: null,
         offset: 0,
+        svg_size: 900,
     },
     methods: {
         addGene: function() {
@@ -165,7 +166,7 @@ var plasmid = new Vue({
                 r: 1.0, 
                 from: 0,
                 to: 0.1,
-                color: "#FFAA00",
+                color: "#FFFFFF",
                 f_arrow: true,
                 f_visible: true,
                 style_id: 0,

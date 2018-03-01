@@ -1,11 +1,9 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
-<meta name='viewport' content='width=device-width, initial-scale=1'>
-<!--<script src="https://cdn.jsdelivr.net/npm/vue@2.5.13/dist/vue.js"></script>-->
-<script src="https://cdn.jsdelivr.net/npm/vue@2.5.13/dist/vue.min.js"></script>
-<title>plasmidraw</title>
-
-
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet">
 <style>
 svg {
     user-select:none;
@@ -26,99 +24,222 @@ svg {
 text {
     pointer-events: none;
 }
+
+label {
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.form-group {
+    margin-bottom: 0.5rem;
+}
+
+.material-icons {
+    font-size: 18px;
+}
 </style>
 
+<title>plasmidraw</title>
 
-<header>
-<h1>plasmidraw</h1>
-<p>Simple SVG drawer for plasmid map diagram.
-<a href='https://github.com/monman53/plasmidraw'>GitHub</a></p>
-</header>
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+<!--<script defer src="https://use.fontawesome.com/releases/v5.0.7/js/all.js"></script>-->
+<!--<script src="https://cdn.jsdelivr.net/npm/vue@2.5.13/dist/vue.js"></script>-->
+<script src="https://cdn.jsdelivr.net/npm/vue@2.5.13/dist/vue.min.js"></script>
 
-<div id='plasmid'>
 
-    <div style='float: left'>
-        <svg width='600px' height='600px' viewBox='-1.5 -1.5 3 3' id='plasmid-svg'
-            @mousemove='mouseMove'
-            @mouseup='mouseUp'>
-            <rect x='-1.5' y='-1.5' width='3' height='3' fill='whilte' fill-opacity='0' @mousedown='gene=null' />
-            <circle cx='0' cy='0' r='1' stroke='black' fill='none' stroke-width='0.01' />
-            <gene-item
-                v-for='g in genes'
-                :mouse_pos='mouse_pos'
-                :gene='g'
-                :editing_gene='gene'
-                :key='g.key'
-                :g_style='g_style'
-                @edit-gene='editGene'>
-            </gene-item>
-        </svg>
-    </div>
+<nav class='navbar navbar-light bg-light'>
+    <a href='https://github.com/monman53/plasmidraw'><span class="navbar-brand">plasmidraw</span></a>
+    <span>powered by <a href='https://vuejs.org/'>Vue.js</a> and SVG.</span>
+</nav>
 
-    <div>
-        <button v-on:click='addGene'>Add Gene</button><br>
-
-        width
-        <input type='range' min='0' max='0.5' step='0.01' 
-            v-model='g_style.dr' /><br>
-        
-        arrow length
-        <input type='range' min='0' max='0.1' step='0.002' 
-            v-model='g_style.darrow' /><br>
-
-        arrow width
-        <input type='range' min='0' max='2' step='0.1' 
-            v-model='g_style.warrow' /><br>
-
-        stroke
-        <input type='checkbox' 
-            v-model='g_style.f_stroke' /><br>
-
-        <button @click='exportSVG'>SVG Export</button><br>
-        <button @click='save'>Save</button><br>
-        Load<input type="file" id="file-input" accept='.json' @change='load'/>
-
-        <div v-if='gene'>
-            <h3>Edit</h3>
-            name
-            <input v-model='gene.name'/><br>
-
-            color
-            <input type='color' v-model='gene.color' /><br>
-
-            arrow
-            <input type='checkbox' v-model='gene.f_arrow' /><br>
-
-            style<br>
-            <input type='radio' :value='0' v-model='gene.style_id'>default<br>
-            <input type='radio' :value='null' v-model='gene.style_id'>custom<br>
-            <div v-if='gene.style_id === null'>
-                width
-                <input type='range' min='0' max='0.5' step='0.01' 
-                    v-model='gene.style.dr' /><br>
-
-                arrow length
-                <input type='range' min='0' max='0.1' step='0.002' 
-                    v-model='gene.style.darrow' /><br>
-
-                arrow width
-                <input type='range' min='0' max='2' step='0.1'
-                    v-model='gene.style.warrow' /><br>
-
-                stroke
-                <input type='checkbox'
-                    v-model='gene.style.f_stroke' /><br>
+<div id='plasmid' class='container-fluid'>
+    <div class='row'>
+        <div class='col-md-3'>
+            <div class='form-group'>
+                <label
+                    class='btn btn-outline-primary'
+                    @click='exportSVG'>
+                    <i class='material-icons'>file_download</i>
+                    SVG
+                </label>
+                <label 
+                    class='btn btn-outline-primary'
+                    @click='save'>
+                    <i class='material-icons' style='font-size: 18px;'>save</i>
+                    Save
+                </label>
+                <label class="btn btn-outline-primary btn-file">
+                    <i class='material-icons'>file_upload</i>
+                    Load
+                    <input
+                        type="file"
+                        style="display: none;"
+                        accept='.json'
+                        @change='load'>
+                </label>
             </div>
-            <button v-on:click='reverseGene'>Reverse</button><br>
-            <button v-on:click='copyGene'>Copy</button><br>
-            <button v-on:click='deleteGene'>Delete</button><br>
+            <div class='form-group'>
+                <div class='form-group row'>
+                    <div class='col-md-5'>
+                        SVG size
+                    </div>
+                    <div class='col-md-auto'>
+                        <input type='range' min='100' max='1000' step='1' 
+                            v-model='svg_size' /><br>
+                    </div>
+                </div>
+            </div>
+
+            <div v-if='genes.length'>
+                <div class='form-group row'>
+                    <div class='col-md-5'>
+                        Width
+                    </div>
+                    <div class='col-md-auto'>
+                        <input type='range' min='0' max='0.5' step='0.01' 
+                            v-model='g_style.dr' /><br>
+                    </div>
+                </div>
+                <div class='form-group row'>
+                    <div class='col-md-5'>
+                        Arrow length
+                    </div>
+                    <div class='col-md-auto'>
+                        <input type='range' min='0' max='0.1' step='0.002' 
+                            v-model='g_style.darrow' /><br>
+                    </div>
+                </div>
+                <div class='form-group row'>
+                    <div class='col-md-5'>
+                        Arrow width
+                    </div>
+                    <div class='col-md-auto'>
+                        <input type='range' min='0' max='2' step='0.1' 
+                            v-model='g_style.warrow' /><br>
+                    </div>
+                </div>
+            </div>
+
+            <div class='form-group'>
+                <button
+                    class='btn btn-primary btn-sm'
+                    v-on:click='addGene'>
+                    <span class='material-icons'>add</span>
+                    Add Gene
+                </button><br>
+            </div>
+
+            <div v-if='gene' class='card'>
+                <div class='card-body form-group'>
+                    <h3>{{gene.name}}</h3>
+                    <div class='form-group row'>
+                        <div class='col'>
+                            <button
+                                class='btn btn-outline-primary btn-sm'
+                                @click='copyGene'>
+                                <i class='material-icons'>content_copy</i>
+                                Copy
+                            </button>
+                            <button
+                                class='btn btn-outline-primary btn-sm'
+                                @click='reverseGene'>
+                                <i class='material-icons'>compare_arrows</i>
+                                Reverse
+                            </button>
+                            <button
+                                class='btn btn-outline-danger btn-sm'
+                                @click='deleteGene'>
+                                <i class='material-icons'>delete</i>
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                    <div class='form-group row'>
+                        <label class='col-3'>Name</label>
+                        <div class='col'>
+                            <input class='col' v-model='gene.name'/><br>
+                        </div>
+                    </div>
+                    <div class='form-group row'>
+                        <label class='col-3'>Color</label>
+                        <div class='col'>
+                            <input type='color' v-model='gene.color' /><br>
+                        </div>
+                    </div>
+                    <div class='form-group row'>
+                        <label class='col-3'>Arrow</label>
+                        <div class='col'>
+                            <input type='checkbox' v-model='gene.f_arrow' /><br>
+                        </div>
+                    </div>
+                    <div class='form-group row'>
+                        <label class='col-3'>Style</label>
+                        <div class='col'>
+                            <input type='radio' :value='0' v-model='gene.style_id'>default<br>
+                            <input type='radio' :value='null' v-model='gene.style_id'>custom<br>
+                        </div>
+                    </div>
+
+                    <div v-if='gene.style_id === null'>
+                        <div class='form-group row'>
+                            <div class='col-md-5'>
+                                Width
+                            </div>
+                            <div class='col-md-auto'>
+                                <input type='range' min='0' max='0.5' step='0.01' 
+                                    v-model='gene.style.dr' /><br>
+                            </div>
+                        </div>
+                        <div class='form-group row'>
+                            <div class='col-md-5'>
+                                Arrow length
+                            </div>
+                            <div class='col-md-auto'>
+                                <input type='range' min='0' max='0.1' step='0.002' 
+                                    v-model='gene.style.darrow' /><br>
+                            </div>
+                        </div>
+                        <div class='form-group row'>
+                            <div class='col-md-5'>
+                                Arrow width
+                            </div>
+                            <div class='col-md-auto'>
+                                <input type='range' min='0' max='2' step='0.1' 
+                                    v-model='gene.style.warrow' /><br>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class='col-md-auto'>
+            <svg :width='svg_size' :height='svg_size'
+                id='plasmid-svg'
+                viewBox='-1.5 -1.5 3 3'
+                @mousemove='mouseMove'
+                @mouseup='mouseUp'>
+                <rect x='-1.5' y='-1.5' width='3' height='3' fill='whilte'
+                    fill-opacity='0'
+                    @mousedown='gene=null' />
+                <circle cx='0' cy='0' r='1' stroke='black' fill='none'
+                    stroke-width='0.01' />
+                <gene-item
+                    v-for='g in genes'
+                    :mouse_pos='mouse_pos'
+                    :gene='g'
+                    :editing_gene='gene'
+                    :key='g.key'
+                    :g_style='g_style'
+                    @edit-gene='editGene'>
+                </gene-item>
+            </svg>
         </div>
     </div>
 </div>
 
-<footer style='clear: both'>
-<p>powered by Vue.js and SVG.</p>
-</footer>
 
 
 <script src='main.js'></script>
