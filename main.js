@@ -36,14 +36,14 @@ Vue.component('gene-item', {
                         />
                     </g>
                 </g>`,
-    props: ['gene', 'editing_gene', 'g_style', 'mouse_pos'], 
+    props: ['gene', 'editing_gene', 'g_style', 'mouse'], 
     data: function() {
         return {
         };
     },
     methods: {
         mouseDown: function(which) {
-            this.gene.offset = this.mouse_pos;
+            this.gene.offset = this.mouse.pos;
             this.$emit('edit-gene', this.gene.key, which);
         }, 
         debug: function() {
@@ -153,19 +153,38 @@ var plasmid = new Vue({
             f_stroke: true,
         },
         gene: null,
-        mouse_pos: 0,
+        mouse: {
+            state: '',
+            drag: false,
+            pos: null,
+            r: null,
+            x: null,
+            y: null,
+            cx: null,
+            cy: null,
+        },
         which: null,
         offset: 0,
         svg_size: 900,
     },
+    watch: {
+        mouse: {
+            handler: function() {
+                this.mouse.cx =  Math.sin(this.mouse.pos*2*Math.PI);
+                this.mouse.cy = -Math.cos(this.mouse.pos*2*Math.PI);
+                this.mouse.r  = Math.sqrt(this.mouse.x*this.mouse.x + this.mouse.y*this.mouse.y);
+            },
+            deep: true,
+        },
+    },
     methods: {
-        addGene: function() {
+        addGene: function(event, from = 0) {
             var new_gene = {
                 key: this.key_counter++,
                 name: "gene_" + this.key_counter,
                 r: 1.0, 
-                from: 0,
-                to: 0.1,
+                from: from,
+                to: Math.min(from+0.1, 1.0),
                 color: "#9FCDFF",
                 f_arrow: true,
                 f_visible: true,
@@ -209,18 +228,21 @@ var plasmid = new Vue({
                 }
             }
             this.which = which;
-            this.offset = this.mouse_pos;
-            this.drag = true;
+            this.offset = this.mouse.pos;
+            this.mouse.drag = true;
         },
         mouseMove: function(event) {
             var svg = document.getElementById('plasmid-svg');
             var rect = svg.getBoundingClientRect();
             var x = event.clientX - rect.left - rect.width/2;
             var y = event.clientY - rect.top  - rect.height/2;
-            var pos = (Math.atan2(-x, y) + Math.PI)/(2*Math.PI);
-            this.mouse_pos = pos;
 
-            if(!this.drag){
+            this.mouse.x = x;
+            this.mouse.y = y;
+            var pos = (Math.atan2(-x, y) + Math.PI)/(2*Math.PI);
+            this.mouse.pos = pos;
+
+            if(!this.mouse.drag){
                 return;
             }
 
@@ -245,7 +267,16 @@ var plasmid = new Vue({
             }
         },
         mouseUp: function() {
-            this.drag = false;
+            this.mouse.drag = false;
+        },
+        mouseEnter: function() {
+            this.mouse.state = 'onMainCircle';
+        },
+        mouseLeave: function() {
+            this.mouse.state = '';
+        },
+        mouseDown: function() {
+            this.addGene(null, this.mouse.pos);
         },
         exportSVG: function() {
             this.gene = null;

@@ -241,9 +241,22 @@ label {
                     @mousedown='gene=null' />
                 <circle cx='0' cy='0' r='1' stroke='black' fill='none'
                     stroke-width='0.01' />
+                <circle v-if="mouse.state=='onMainCircle'" :cx='mouse.cx' :cy='mouse.cy' :r='0.04'
+                    fill='none'
+                    stroke='black'
+                    stroke-width='0.01'
+                    />
+                <circle cx='0' cy='0' :r='1+0.04' fill='transparent' fill-opacity='0'
+                    stroke='none'
+                    @mousedown='mouseDown'
+                    @mouseenter='mouseEnter'
+                    @mouseleave='mouseLeave'
+                    stroke-width='0' />
+                <circle cx='0' cy='0' :r='1-0.04' stroke='none' fill-opacity='0'
+                    stroke-width='0' />
                 <gene-item
                     v-for='g in genes'
-                    :mouse_pos='mouse_pos'
+                    :mouse='mouse'
                     :gene='g'
                     :editing_gene='gene'
                     :key='g.key'
