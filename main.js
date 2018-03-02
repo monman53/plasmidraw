@@ -13,19 +13,20 @@ Vue.component('gene-item', {
                     />
                     <g v-if="f_knob_visible">
                         <text
-                            :x="mx*(1-gene.style.dr-0.04)"
-                            :y="my*(1-gene.style.dr-0.04)"
+                            :x="mx*(1-gene.style.dr-0.14)"
+                            :y="my*(1-gene.style.dr-0.14)"
                             :transform="text_rotate"
                             :text-anchor="text_anchor"
                             font-size='0.1'>
                             {{gene.name}}
                         </text>
                         <circle
-                            :cx="sx*(1-gene.style.dr)"
-                            :cy="sy*(1-gene.style.dr)"
+                            :cx="mx*(1-gene.style.dr-0.08)"
+                            :cy="my*(1-gene.style.dr-0.08)"
                             r="0.04"
-                            class="knob"
-                            @mousedown="mouseDown('dr')"
+                            class="knob-color"
+                            :fill="gene.color"
+                            @mousedown="mouseDown('color')"
                         />
                         <circle v-if="gene.f_arrow"
                             :cx="ax*(1+gene.style.dr+gene.style.warrow)"
@@ -35,11 +36,25 @@ Vue.component('gene-item', {
                             @mousedown="mouseDown('a')"
                         />
                         <circle
+                            :cx="sx"
+                            :cy="sy"
+                            r="0.04"
+                            @mousedown="mouseDown('from')"
+                            class="knob"
+                        />
+                        <circle
                             :cx="tx"
                             :cy="ty"
                             r="0.04"
                             @mousedown="mouseDown('to')"
                             class="knob"
+                        />
+                        <circle
+                            :cx="sx*(1+gene.style.dr)"
+                            :cy="sy*(1+gene.style.dr)"
+                            r="0.04"
+                            class="knob"
+                            @mousedown="mouseDown('dr')"
                         />
                     </g>
                 </g>`,
@@ -53,10 +68,6 @@ Vue.component('gene-item', {
             this.gene.offset = this.mouse.pos;
             this.$emit('edit-gene', this.gene.key, which);
         }, 
-        debug: function() {
-            var d = new Date();
-            console.log(d.getTime());
-        },
     }, 
     computed: {
         stroke_width: function() {
@@ -97,8 +108,8 @@ Vue.component('gene-item', {
         },
         text_rotate: function(){
             return `rotate(${(this.middle < 0.5 ? -90 : 90)+360*this.middle} 
-                            ${this.mx*(1-this.gene.style.dr-0.04)}
-                            ${this.my*(1-this.gene.style.dr-0.04)})`;
+                            ${this.mx*(1-this.gene.style.dr-0.12)}
+                            ${this.my*(1-this.gene.style.dr-0.12)})`;
         },
         text_anchor: function() {
             return this.middle < 0.5 ? 'end' : 'start';
@@ -185,6 +196,9 @@ var plasmid = new Vue({
             deep: true,
         },
     },
+    created: function() {
+        window.addEventListener('keydown', this.keyDown);
+    }, 
     methods: {
         addGene: function(event, from = 0) {
             var new_gene = {
@@ -219,6 +233,9 @@ var plasmid = new Vue({
             this.gene.to   = tmp;
         },
         deleteGene: function() {
+            if(!this.gene){
+                return;
+            }
             this.gene.visible = false;
             for(var i=0;i<this.genes.length;i++){
                 if(this.genes[i].key == this.gene.key){
@@ -238,6 +255,10 @@ var plasmid = new Vue({
             this.which = which;
             this.offset = this.mouse.pos;
             this.mouse.drag = true;
+            if(this.which == 'color'){
+                var color_picker = document.getElementById('color_picker');
+                color_picker.click();
+            }
         },
         mouseMove: function(event) {
             var svg = document.getElementById('plasmid-svg');
@@ -274,8 +295,8 @@ var plasmid = new Vue({
                         this.gene[this.which] = this.mouse.pos;
                         break;
                     case 'dr':
-                        this.gene.style.dr = Math.max(1-this.mouse.r, 0);
-                        this.gene.from = this.mouse.pos;
+                        this.gene.style.dr = Math.max(this.mouse.r-1, 0);
+                        //this.gene.from = this.mouse.pos;
                         break;
                     case 'a':
                         if(this.gene.to > this.gene.from){
@@ -288,6 +309,9 @@ var plasmid = new Vue({
                 }
             });
         },
+        mouseDown: function() {
+            this.addGene(null, this.mouse.pos);
+        },
         mouseUp: function() {
             this.mouse.drag = false;
         },
@@ -297,8 +321,10 @@ var plasmid = new Vue({
         mouseLeave: function() {
             this.mouse.state = '';
         },
-        mouseDown: function() {
-            this.addGene(null, this.mouse.pos);
+        keyDown: function(event) {
+            if(event.key == 'Delete'){
+                this.deleteGene();
+            }
         },
         exportSVG: function() {
             this.gene = null;
