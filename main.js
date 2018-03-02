@@ -27,7 +27,7 @@ Vue.component('gene-item', {
                             class="knob"
                             @mousedown="mouseDown('dr')"
                         />
-                        <circle
+                        <circle v-if="gene.f_arrow"
                             :cx="ax*(1+gene.style.dr+gene.style.warrow)"
                             :cy="ay*(1+gene.style.dr+gene.style.warrow)"
                             r="0.04"
@@ -278,7 +278,11 @@ var plasmid = new Vue({
                         this.gene.from = this.mouse.pos;
                         break;
                     case 'a':
-                        this.gene.style.darrow = Math.min(Math.max(Math.abs(this.gene.to - this.mouse.pos), 0), Math.abs(this.gene.to-this.gene.from));
+                        if(this.gene.to > this.gene.from){
+                            this.gene.style.darrow = Math.min(Math.max(this.gene.to - this.mouse.pos, 0), this.gene.to-this.gene.from);
+                        }else{
+                            this.gene.style.darrow = Math.min(Math.max(this.mouse.pos - this.gene.to, 0), this.gene.from-this.gene.to);
+                        }
                         this.gene.style.warrow = Math.max(this.mouse.r-1-this.gene.style.dr, 0);
                         break;
                 }
