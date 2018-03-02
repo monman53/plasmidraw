@@ -27,13 +27,13 @@ Vue.component('gene-item', {
                             class="knob"
                             @mousedown="mouseDown('dr')"
                         />
-                        //<circle
-                            //:cx="sx"
-                            //:cy="sy"
-                            //r="0.04"
-                            //@mousedown="mouseDown('from')"
-                            //class="knob"
-                        ///>
+                        <circle
+                            :cx="ax*(1+gene.style.dr+gene.style.warrow)"
+                            :cy="ay*(1+gene.style.dr+gene.style.warrow)"
+                            r="0.04"
+                            class="knob"
+                            @mousedown="mouseDown('a')"
+                        />
                         <circle
                             :cx="tx"
                             :cy="ty"
@@ -79,10 +79,12 @@ Vue.component('gene-item', {
             return  this.gene.style.r*Math.sin(this.middle*2*Math.PI);
         },
         ax: function() {
-            return  this.gene.style.r*Math.sin((this.gene.to+(this.gene.to > this.gene.from ? -this.gene.style.darrow : this.gene.style.darrow))*2*Math.PI);
+            var darrow = Math.min(Math.abs(this.gene.from-this.gene.to), this.gene.style.darrow);
+            return  this.gene.style.r*Math.sin((this.gene.to+(this.gene.to > this.gene.from ? -darrow : darrow))*2*Math.PI);
         },
         ay: function() {
-            return -this.gene.style.r*Math.cos((this.gene.to+(this.gene.to > this.gene.from ? -this.gene.style.darrow : this.gene.style.darrow))*2*Math.PI);
+            var darrow = Math.min(Math.abs(this.gene.from-this.gene.to), this.gene.style.darrow);
+            return -this.gene.style.r*Math.cos((this.gene.to+(this.gene.to > this.gene.from ? -darrow : darrow))*2*Math.PI);
         },
         my: function() {
             return -this.gene.style.r*Math.cos(this.middle*2*Math.PI);
@@ -126,9 +128,9 @@ Vue.component('gene-item', {
                 res = 
                     `m ${sx*(1+dr)} ${sy*(1+dr)}
                      A ${r*(1+dr)} ${r*(1+dr)}, 0 ${b} ${a}, ${ax*(1+dr)} ${ay*(1+dr)}
-                     L ${ax*(1+dr+dr*wr)} ${ay*(1+dr+dr*wr)}
+                     L ${ax*(1+dr+wr)} ${ay*(1+dr+wr)}
                      L ${tx} ${ty}
-                     L ${ax*(1-dr-dr*wr)} ${ay*(1-dr-dr*wr)}
+                     L ${ax*(1-dr-wr)} ${ay*(1-dr-wr)}
                      L ${ax*(1-dr)} ${ay*(1-dr)}
                      A ${r*(1-dr)} ${r*(1-dr)}, 0 ${b} ${1-a}, ${sx*(1-dr)} ${sy*(1-dr)}
                      Z`;
@@ -276,6 +278,8 @@ var plasmid = new Vue({
                         this.gene.from = this.mouse.pos;
                         break;
                     case 'a':
+                        this.gene.style.darrow = Math.min(Math.max(Math.abs(this.gene.to - this.mouse.pos), 0), Math.abs(this.gene.to-this.gene.from));
+                        this.gene.style.warrow = Math.max(this.mouse.r-1-this.gene.style.dr, 0);
                         break;
                 }
             });
