@@ -13,20 +13,27 @@ Vue.component('gene-item', {
                     />
                     <g v-if="f_knob_visible">
                         <text
-                            :x="text_x"
-                            :y="text_y"
+                            :x="mx*(1-gene.style.dr-0.04)"
+                            :y="my*(1-gene.style.dr-0.04)"
                             :transform="text_rotate"
                             :text-anchor="text_anchor"
                             font-size='0.1'>
                             {{gene.name}}
                         </text>
                         <circle
-                            :cx="sx"
-                            :cy="sy"
+                            :cx="sx*(1-gene.style.dr)"
+                            :cy="sy*(1-gene.style.dr)"
                             r="0.04"
-                            @mousedown="mouseDown('from')"
                             class="knob"
+                            @mousedown="mouseDown('dr')"
                         />
+                        //<circle
+                            //:cx="sx"
+                            //:cy="sy"
+                            //r="0.04"
+                            //@mousedown="mouseDown('from')"
+                            //class="knob"
+                        ///>
                         <circle
                             :cx="tx"
                             :cy="ty"
@@ -36,7 +43,7 @@ Vue.component('gene-item', {
                         />
                     </g>
                 </g>`,
-    props: ['gene', 'editing_gene', 'g_style', 'mouse'], 
+    props: ['gene', 'editing_gene', 'mouse'], 
     data: function() {
         return {
         };
@@ -52,64 +59,62 @@ Vue.component('gene-item', {
         },
     }, 
     computed: {
-        style: function() {
-            if(this.gene.style_id === null){
-                return this.gene.style;
-            }else{
-                return this.g_style;
-            }
-        }, 
         stroke_width: function() {
-            return this.style.f_stroke ? 0.01 : 0;
+            return this.gene.style.f_stroke ? 0.01 : 0;
         },
         f_knob_visible: function() {
             if(this.editing_gene === null) return false;
             return this.gene.f_visible && (this.gene.key == this.editing_gene.key);
         },
         sx: function() {
-            return  this.gene.r*Math.sin(this.gene.from*2*Math.PI);
+            return  this.gene.style.r*Math.sin(this.gene.from*2*Math.PI);
         },
         sy: function() {
-            return -this.gene.r*Math.cos(this.gene.from*2*Math.PI);
+            return -this.gene.style.r*Math.cos(this.gene.from*2*Math.PI);
         },
-        tx: function() {
-            return  this.gene.r*Math.sin(this.gene.to*2*Math.PI);
-        },
-        ty: function() {
-            return -this.gene.r*Math.cos(this.gene.to*2*Math.PI);
-        },
-        text_m: function() {
+        middle: function() {
             return (this.gene.from+this.gene.to)/2;
         },
-        text_x: function() {
-            return this.gene.r*Math.sin(this.text_m*2*Math.PI)*(1-this.style.dr-0.04);
+        mx: function() {
+            return  this.gene.style.r*Math.sin(this.middle*2*Math.PI);
         },
-        text_y: function() {
-            return -this.gene.r*Math.cos(this.text_m*2*Math.PI)*(1-this.style.dr-0.04);
+        ax: function() {
+            return  this.gene.style.r*Math.sin((this.gene.to+(this.gene.to > this.gene.from ? -this.gene.style.darrow : this.gene.style.darrow))*2*Math.PI);
+        },
+        ay: function() {
+            return -this.gene.style.r*Math.cos((this.gene.to+(this.gene.to > this.gene.from ? -this.gene.style.darrow : this.gene.style.darrow))*2*Math.PI);
+        },
+        my: function() {
+            return -this.gene.style.r*Math.cos(this.middle*2*Math.PI);
+        },
+        tx: function() {
+            return  this.gene.style.r*Math.sin(this.gene.to*2*Math.PI);
+        },
+        ty: function() {
+            return -this.gene.style.r*Math.cos(this.gene.to*2*Math.PI);
         },
         text_rotate: function(){
-            return `rotate(${(this.text_m < 0.5 ? -90 : 90)+360*this.text_m} 
-                            ${this.text_x} ${this.text_y})`;
+            return `rotate(${(this.middle < 0.5 ? -90 : 90)+360*this.middle} 
+                            ${this.mx*(1-this.gene.style.dr-0.04)}
+                            ${this.my*(1-this.gene.style.dr-0.04)})`;
         },
         text_anchor: function() {
-            return this.text_m < 0.5 ? 'end' : 'start';
+            return this.middle < 0.5 ? 'end' : 'start';
         },
         d: function() {
-            var r    = this.gene.r;
+            var r    = this.gene.style.r;
             var from = this.gene.from;
             var to   = this.gene.to;
 
-            var darrow = Math.min(Math.abs(from-to), this.style.darrow);
+            var darrow = Math.min(Math.abs(from-to), this.gene.style.darrow);
 
-            var dr = Math.min(this.style.dr, 1);
-            var wr = Math.min(this.style.warrow, 2);
+            var dr = Math.min(this.gene.style.dr, 1);
+            var wr = Math.min(this.gene.style.warrow, 2);
 
             var sx = this.sx;
             var sy = this.sy;
-            var mx = this.mx;
-            var my = this.my;
-            var mx =  r*Math.sin((to+(to > from ? -darrow : darrow))*2*Math.PI);
-            var my = -r*Math.cos((to+(to > from ? -darrow : darrow))*2*Math.PI);
+            var ax = this.ax;
+            var ay = this.ay;
             var tx = this.tx;
             var ty = this.ty;
 
@@ -120,11 +125,11 @@ Vue.component('gene-item', {
             if(this.gene.f_arrow){
                 res = 
                     `m ${sx*(1+dr)} ${sy*(1+dr)}
-                     A ${r*(1+dr)} ${r*(1+dr)}, 0 ${b} ${a}, ${mx*(1+dr)} ${my*(1+dr)}
-                     L ${mx*(1+dr+dr*wr)} ${my*(1+dr+dr*wr)}
+                     A ${r*(1+dr)} ${r*(1+dr)}, 0 ${b} ${a}, ${ax*(1+dr)} ${ay*(1+dr)}
+                     L ${ax*(1+dr+dr*wr)} ${ay*(1+dr+dr*wr)}
                      L ${tx} ${ty}
-                     L ${mx*(1-dr-dr*wr)} ${my*(1-dr-dr*wr)}
-                     L ${mx*(1-dr)} ${my*(1-dr)}
+                     L ${ax*(1-dr-dr*wr)} ${ay*(1-dr-dr*wr)}
+                     L ${ax*(1-dr)} ${ay*(1-dr)}
                      A ${r*(1-dr)} ${r*(1-dr)}, 0 ${b} ${1-a}, ${sx*(1-dr)} ${sy*(1-dr)}
                      Z`;
             }else{
@@ -170,6 +175,7 @@ var plasmid = new Vue({
     watch: {
         mouse: {
             handler: function() {
+                this.mouse.pos = (Math.atan2(-this.mouse.x, this.mouse.y) + Math.PI)/(2*Math.PI);
                 this.mouse.cx =  Math.sin(this.mouse.pos*2*Math.PI);
                 this.mouse.cy = -Math.cos(this.mouse.pos*2*Math.PI);
                 this.mouse.r  = Math.sqrt(this.mouse.x*this.mouse.x + this.mouse.y*this.mouse.y);
@@ -182,16 +188,16 @@ var plasmid = new Vue({
             var new_gene = {
                 key: this.key_counter++,
                 name: "gene_" + this.key_counter,
-                r: 1.0, 
                 from: from,
                 to: Math.min(from+0.1, 1.0),
                 color: "#9FCDFF",
                 f_arrow: true,
                 f_visible: true,
                 style_id: 0,
-                style: {},
+                style: this.g_style,
+                custom_style: {},
             }
-            Object.assign(new_gene.style, this.g_style);
+            Object.assign(new_gene.custom_style, this.g_style);
 
             this.genes.push(new_gene);
             this.gene = new_gene;
@@ -234,37 +240,45 @@ var plasmid = new Vue({
         mouseMove: function(event) {
             var svg = document.getElementById('plasmid-svg');
             var rect = svg.getBoundingClientRect();
-            var x = event.clientX - rect.left - rect.width/2;
-            var y = event.clientY - rect.top  - rect.height/2;
-
+            var x = (event.clientX - rect.left - rect.width/2)/(rect.width/4);
+            var y = (event.clientY - rect.top  - rect.height/2)/(rect.height/4);
             this.mouse.x = x;
             this.mouse.y = y;
-            var pos = (Math.atan2(-x, y) + Math.PI)/(2*Math.PI);
-            this.mouse.pos = pos;
 
             if(!this.mouse.drag){
                 return;
             }
 
-            var which = this.which;
             var offset = this.offset;
             var min = Math.min(this.gene.from, this.gene.to);
             var max = Math.max(this.gene.from, this.gene.to);
-            var d = 0;
-            if(which == 'all'){
-                if(max + pos-offset > 1){
-                    d = 1 - max;
-                }else if(min + pos-offset < 0){
-                    d = 0 - min;
-                }else{
-                    d = pos-offset;
+            this.$nextTick(function() {
+                switch(this.which){
+                    case 'all':
+                        var d = 0;
+                        if(max + this.mouse.pos-offset > 1){
+                            d = 1 - max;
+                        }else if(min + this.mouse.pos-offset < 0){
+                            d = 0 - min;
+                        }else{
+                            d = this.mouse.pos-offset;
+                        }
+                        this.gene.from += d;
+                        this.gene.to   += d;
+                        this.offset = this.mouse.pos;
+                        break;
+                    case 'from':
+                    case 'to':
+                        this.gene[this.which] = this.mouse.pos;
+                        break;
+                    case 'dr':
+                        this.gene.style.dr = Math.max(1-this.mouse.r, 0);
+                        this.gene.from = this.mouse.pos;
+                        break;
+                    case 'a':
+                        break;
                 }
-                this.gene.from += d;
-                this.gene.to   += d;
-                this.offset = pos;
-            }else{
-                this.gene[which] = pos;
-            }
+            });
         },
         mouseUp: function() {
             this.mouse.drag = false;

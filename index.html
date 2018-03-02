@@ -102,15 +102,15 @@ label {
             </div>
 
             <div v-if='genes.length'>
-                <div class='form-group row'>
-                    <div class='col-md-5'>
-                        Width
-                    </div>
-                    <div class='col-md-auto'>
-                        <input type='range' min='0' max='0.5' step='0.01' 
-                            v-model='g_style.dr' /><br>
-                    </div>
-                </div>
+                <!--<div class='form-group row'>-->
+                    <!--<div class='col-md-5'>-->
+                        <!--Width-->
+                    <!--</div>-->
+                    <!--<div class='col-md-auto'>-->
+                        <!--<input type='range' min='0' max='0.5' step='0.01' -->
+                            <!--v-model='g_style.dr' /><br>-->
+                    <!--</div>-->
+                <!--</div>-->
                 <div class='form-group row'>
                     <div class='col-md-5'>
                         Arrow length
@@ -164,33 +164,40 @@ label {
                     <div class='form-group row'>
                         <label class='col-3'>Style</label>
                         <div class='col'>
-                            <input type='radio' :value='0' id='radio_default'
-                                v-model='gene.style_id'>
+                            <input type='radio'
+                                name='style'
+                                id='radio_default'
+                                checked='checked'
+                                @click='gene.style = g_style'
+                                />
                             <label for='radio_default'>default</label>
                             <br>
-                            <input type='radio' :value='null' id='radio_custom'
-                                v-model='gene.style_id'>
+                            <input type='radio'
+                                name='style'
+                                id='radio_custom'
+                                @click='gene.style = gene.custom_style'
+                                />
                             <label for='radio_custom'>custom</label>
                         </div>
                     </div>
 
-                    <div v-if='gene.style_id === null'>
-                        <div class='form-group row'>
-                            <div class='col-md-5'>
-                                Width
-                            </div>
-                            <div class='col-md-auto'>
-                                <input type='range' min='0' max='0.5' step='0.01' 
-                                    v-model='gene.style.dr' /><br>
-                            </div>
-                        </div>
+                    <div v-if='gene.style == gene.custom_style'>
+                        <!--<div class='form-group row'>-->
+                            <!--<div class='col-md-5'>-->
+                                <!--Width-->
+                            <!--</div>-->
+                            <!--<div class='col-md-auto'>-->
+                                <!--<input type='range' min='0' max='0.5' step='0.01' -->
+                                    <!--v-model='gene.custom_style.dr' /><br>-->
+                            <!--</div>-->
+                        <!--</div>-->
                         <div class='form-group row'>
                             <div class='col-md-5'>
                                 Arrow length
                             </div>
                             <div class='col-md-auto'>
                                 <input type='range' min='0' max='0.1' step='0.002' 
-                                    v-model='gene.style.darrow' /><br>
+                                    v-model='gene.custom_style.darrow' /><br>
                             </div>
                         </div>
                         <div class='form-group row'>
@@ -199,7 +206,7 @@ label {
                             </div>
                             <div class='col-md-auto'>
                                 <input type='range' min='0' max='2' step='0.1' 
-                                    v-model='gene.style.warrow' /><br>
+                                    v-model='gene.custom_style.warrow' /><br>
                             </div>
                         </div>
                     </div>
@@ -233,7 +240,7 @@ label {
         <div class='col-md-auto'>
             <svg :width='svg_size' :height='svg_size'
                 id='plasmid-svg'
-                viewBox='-1.5 -1.5 3 3'
+                viewBox='-2 -2 4 4'
                 @mousemove='mouseMove'
                 @mouseup='mouseUp'>
                 <rect x='-1.5' y='-1.5' width='3' height='3' fill='whilte'
@@ -241,7 +248,8 @@ label {
                     @mousedown='gene=null' />
                 <circle cx='0' cy='0' r='1' stroke='black' fill='none'
                     stroke-width='0.01' />
-                <circle v-if="mouse.state=='onMainCircle'" :cx='mouse.cx' :cy='mouse.cy' :r='0.04'
+                <circle v-if="mouse.state=='onMainCircle'"
+                    :cx='mouse.cx' :cy='mouse.cy' :r='0.04'
                     fill='none'
                     stroke='black'
                     stroke-width='0.01'
@@ -260,7 +268,6 @@ label {
                     :gene='g'
                     :editing_gene='gene'
                     :key='g.key'
-                    :g_style='g_style'
                     @edit-gene='editGene'>
                 </gene-item>
             </svg>
