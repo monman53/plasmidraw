@@ -2,4 +2,9 @@
 
 A simple SVG drawer for plasmid map diagram.
 
-https://monman53.github.io/plasmidraw/
+Visit https://monman53.github.io/plasmidraw/.
+
+
+== Screenshot
+
+image:./screenshot.png[Screenshot, link=https://monman53.github.io/plasmidraw/]
