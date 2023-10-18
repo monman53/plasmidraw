@@ -1,67 +1,68 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
-<meta name='description' content='SVG based plasmid map diagram drawer. You can export svg files.'>
+<meta name='description' content='Plasmid map diagram online drawer. You can export the results as SVG format.'>
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons"
-      rel="stylesheet">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+    integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 <style>
-svg {
-    user-select:none;
-    -webkit-user-select:none;
-    -ms-user-select: none;
-    -moz-user-select:none;
-    -khtml-user-select:none;
-    -webkit-user-drag:none;
-    -khtml-user-drag:none;
-}
+    svg {
+        user-select: none;
+        -webkit-user-select: none;
+        -ms-user-select: none;
+        -moz-user-select: none;
+        -khtml-user-select: none;
+        -webkit-user-drag: none;
+        -khtml-user-drag: none;
+    }
 
-.knob {
-    fill: #FFFFFF00;
-    stroke: black;
-    stroke-width: 0.01;
-}
+    .knob {
+        fill: #FFFFFF00;
+        stroke: black;
+        stroke-width: 0.01;
+    }
 
-.knob-color {
-    stroke: black;
-    stroke-width: 0.01;
-}
+    .knob-color {
+        stroke: black;
+        stroke-width: 0.01;
+    }
 
-text {
-    pointer-events: none;
-}
+    text {
+        pointer-events: none;
+    }
 
-label {
-    margin-top: 0.5rem;
-    margin-bottom: 0.5rem;
-}
+    label {
+        margin-top: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
 
-.form-group {
-    margin-bottom: 0.5rem;
-}
+    .form-group {
+        margin-bottom: 0.5rem;
+    }
 
-.material-icons {
-    font-size: 18px;
-}
+    .material-icons {
+        font-size: 18px;
+    }
 </style>
 
 <title>plasmidraw : Plasmid map diagram drawer</title>
 
-<!-- Global site tag (gtag.js) - Google Analytics -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=UA-111264044-1"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'UA-111264044-1');
-</script>
-<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+    integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+    crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+    integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+    crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+    integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+    crossorigin="anonymous"></script>
 <!--<script defer src="https://use.fontawesome.com/releases/v5.0.7/js/all.js"></script>-->
 <!--<script src="https://cdn.jsdelivr.net/npm/vue@2.5.13/dist/vue.js"></script>-->
 <script src="https://cdn.jsdelivr.net/npm/vue@2.5.13/dist/vue.min.js"></script>
+
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-E9ZG1KHTVT"></script>
+<script src='/scripts/google.js'></script>
 
 
 <nav class='navbar navbar-dark bg-primary'>
@@ -73,26 +74,18 @@ label {
     <div class='row'>
         <div class='col-md-3'>
             <div class='form-group'>
-                <label
-                    class='btn btn-outline-primary'
-                    @click='exportSVG'>
+                <label class='btn btn-outline-primary' @click='exportSVG'>
                     <i class='material-icons'>file_download</i>
                     SVG
                 </label>
-                <label 
-                    class='btn btn-outline-primary'
-                    @click='save'>
+                <label class='btn btn-outline-primary' @click='save'>
                     <i class='material-icons' style='font-size: 18px;'>save</i>
                     Save
                 </label>
                 <label class="btn btn-outline-primary btn-file">
                     <i class='material-icons'>file_upload</i>
                     Load
-                    <input
-                        type="file"
-                        style="display: none;"
-                        accept='.json'
-                        @change='load'>
+                    <input type="file" style="display: none;" accept='.json' @change='load'>
                 </label>
             </div>
             <div class='form-group'>
@@ -101,16 +94,13 @@ label {
                         SVG size
                     </div>
                     <div class='col-md-auto'>
-                        <input type='range' min='100' max='1000' step='1' 
-                            v-model='svg_size' /><br>
+                        <input type='range' min='100' max='1000' step='1' v-model='svg_size' /><br>
                     </div>
                 </div>
             </div>
 
             <div class='form-group'>
-                <button
-                    class='btn btn-primary btn-sm'
-                    v-on:click='addGene'>
+                <button class='btn btn-primary btn-sm' v-on:click='addGene'>
                     <span class='material-icons'>add</span>
                     Add Gene
                 </button><br>
@@ -121,20 +111,20 @@ label {
                     <div class='form-group row'>
                         <label class='col-3'>Name</label>
                         <div class='col'>
-                            <input class='form-control' v-model='gene.name'/><br>
+                            <input class='form-control' v-model='gene.name' /><br>
                         </div>
                     </div>
                     <!--<div class='form-group row'>-->
-                        <!--<label class='col-3'>From</label>-->
-                        <!--<div class='col'>-->
-                            <!--<input class='form-control' type='number' min='0' max='1' v-model='gene.from'/><br>-->
-                        <!--</div>-->
+                    <!--<label class='col-3'>From</label>-->
+                    <!--<div class='col'>-->
+                    <!--<input class='form-control' type='number' min='0' max='1' v-model='gene.from'/><br>-->
+                    <!--</div>-->
                     <!--</div>-->
                     <!--<div class='form-group row'>-->
-                        <!--<label class='col-3'>To</label>-->
-                        <!--<div class='col'>-->
-                            <!--<input class='form-control' type='number' min='0' max='1' v-model='gene.to'/><br>-->
-                        <!--</div>-->
+                    <!--<label class='col-3'>To</label>-->
+                    <!--<div class='col'>-->
+                    <!--<input class='form-control' type='number' min='0' max='1' v-model='gene.to'/><br>-->
+                    <!--</div>-->
                     <!--</div>-->
                     <div class='form-group row' style='display: none;'>
                         <label class='col-3'>Color</label>
@@ -151,40 +141,27 @@ label {
                     <div class='form-group row'>
                         <label class='col-3'>Style</label>
                         <div class='col'>
-                            <input type='radio'
-                                name='style'
-                                id='radio_default'
-                                checked='checked'
-                                @click='gene.style = g_style'
-                                />
+                            <input type='radio' name='style' id='radio_default' checked='checked'
+                                @click='gene.style = g_style' />
                             <label for='radio_default'>default</label>
                             <br>
-                            <input type='radio'
-                                name='style'
-                                id='radio_custom'
-                                @click='gene.style = gene.custom_style'
-                                />
+                            <input type='radio' name='style' id='radio_custom'
+                                @click='gene.style = gene.custom_style' />
                             <label for='radio_custom'>custom</label>
                         </div>
                     </div>
 
                     <div class='form-group row'>
                         <div class='col'>
-                            <button
-                                class='btn btn-outline-primary btn-sm'
-                                @click='copyGene'>
+                            <button class='btn btn-outline-primary btn-sm' @click='copyGene'>
                                 <i class='material-icons'>content_copy</i>
                                 Copy
                             </button>
-                            <button
-                                class='btn btn-outline-primary btn-sm'
-                                @click='reverseGene'>
+                            <button class='btn btn-outline-primary btn-sm' @click='reverseGene'>
                                 <i class='material-icons'>compare_arrows</i>
                                 Reverse
                             </button>
-                            <button
-                                class='btn btn-outline-danger btn-sm'
-                                @click='deleteGene'>
+                            <button class='btn btn-outline-danger btn-sm' @click='deleteGene'>
                                 <i class='material-icons'>delete</i>
                                 Delete
                             </button>
@@ -195,36 +172,16 @@ label {
         </div>
 
         <div class='col-md-auto' @keyup.delete='deleteGene'>
-            <svg :width='svg_size' :height='svg_size'
-                id='plasmid-svg'
-                viewBox='-2 -2 4 4'
-                @mousemove='mouseMove'
+            <svg :width='svg_size' :height='svg_size' id='plasmid-svg' viewBox='-2 -2 4 4' @mousemove='mouseMove'
                 @mouseup='mouseUp'>
-                <rect x='-1.5' y='-1.5' width='3' height='3' fill='whilte'
-                    fill-opacity='0'
-                    @mousedown='gene=null' />
-                <circle cx='0' cy='0' r='1' stroke='black' fill='none'
-                    stroke-width='0.01' />
-                <circle v-if="mouse.state=='onMainCircle'"
-                    :cx='mouse.cx' :cy='mouse.cy' :r='0.04'
-                    fill='none'
-                    stroke='black'
-                    stroke-width='0.01'
-                    />
-                <circle cx='0' cy='0' :r='1+0.04' fill='transparent' fill-opacity='0'
-                    stroke='none'
-                    @mousedown='mouseDown'
-                    @mouseenter='mouseEnter'
-                    @mouseleave='mouseLeave'
-                    stroke-width='0' />
-                <circle cx='0' cy='0' :r='1-0.04' stroke='none' fill-opacity='0'
-                    stroke-width='0' />
-                <gene-item
-                    v-for='g in genes'
-                    :mouse='mouse'
-                    :gene='g'
-                    :editing_gene='gene'
-                    :key='g.key'
+                <rect x='-1.5' y='-1.5' width='3' height='3' fill='whilte' fill-opacity='0' @mousedown='gene=null' />
+                <circle cx='0' cy='0' r='1' stroke='black' fill='none' stroke-width='0.01' />
+                <circle v-if="mouse.state=='onMainCircle'" :cx='mouse.cx' :cy='mouse.cy' :r='0.04' fill='none'
+                    stroke='black' stroke-width='0.01' />
+                <circle cx='0' cy='0' :r='1+0.04' fill='transparent' fill-opacity='0' stroke='none'
+                    @mousedown='mouseDown' @mouseenter='mouseEnter' @mouseleave='mouseLeave' stroke-width='0' />
+                <circle cx='0' cy='0' :r='1-0.04' stroke='none' fill-opacity='0' stroke-width='0' />
+                <gene-item v-for='g in genes' :mouse='mouse' :gene='g' :editing_gene='gene' :key='g.key'
                     @edit-gene='editGene'>
                 </gene-item>
             </svg>
